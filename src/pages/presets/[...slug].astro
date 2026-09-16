@@ -40,7 +40,7 @@ const { preset_name, chinese_name, output_type, origin, one_liner, tags, hasPrev
     {hasPreview && (
       <figure class="preview-figure">
         <img
-          src={`/presets/${output_type}/${preset_name}/preview.png`}
+          src={`/presets/${output_type}--${preset_name}/preview.png`}
           alt={`${preset_name} preview`}
           loading="lazy"
         />
@@ -50,7 +50,7 @@ const { preset_name, chinese_name, output_type, origin, one_liner, tags, hasPrev
 
     {hasExample && (
       <div class="example-link">
-        <a href={`/presets/${output_type}/${preset_name}/example.html`} target="_blank" rel="noopener">
+        <a href={`/presets/${output_type}--${preset_name}/example.html`} target="_blank" rel="noopener">
           查看完整示例 HTML →
         </a>
       </div>

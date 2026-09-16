@@ -39,7 +39,7 @@ for (const p of allPresets) {
                 <a href={`/presets/${p.id}/`} class="preset-card">
                   {p.data.hasPreview && (
                     <img
-                      src={`/presets/${p.data.output_type}/${p.data.preset_name}/preview.png`}
+                      src={`/presets/${p.data.output_type}--${p.data.preset_name}/preview.png`}
                       alt={`${p.data.preset_name} preview`}
                       class="preset-preview"
                       loading="lazy"
