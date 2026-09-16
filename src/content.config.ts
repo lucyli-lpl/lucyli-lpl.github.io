@@ -4,10 +4,9 @@ import { moduleLoader } from './lib/module-loader';
 import { caseLoader } from './lib/case-loader';
 import { skillLoader } from './lib/skill-loader';
 import { presetLoader } from './lib/preset-loader';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const root = process.cwd();
 
 const patterns = defineCollection({
   loader: glob({ base: '.content/ai-design-patterns/patterns', pattern: '*.md' }),
