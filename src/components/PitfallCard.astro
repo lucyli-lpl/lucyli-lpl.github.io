@@ -1,0 +1,104 @@
+---
+/**
+ * 一条踩坑记录：坑 → 原因 → 对策。
+ * 复盘页和坑库页共用。
+ */
+interface Props {
+  what: string;
+  why?: string;
+  fix?: string;
+  module?: number | null;
+  moduleTitle?: string;
+  moduleHref?: string;
+  source?: { title: string; href: string };
+}
+
+const { what, why, fix, module, moduleTitle, moduleHref, source } = Astro.props;
+const moduleLabel = module == null ? '通用' : `模块 ${String(module).padStart(2, '0')}`;
+---
+
+<article class="pitfall">
+  <header class="pitfall-head">
+    {moduleHref
+      ? <a href={moduleHref} class="pitfall-module" title={moduleTitle}>{moduleLabel}</a>
+      : <span class="pitfall-module" title={moduleTitle}>{moduleLabel}</span>}
+    {source && <a href={source.href} class="pitfall-source">{source.title}</a>}
+  </header>
+  <p class="pitfall-what">{what}</p>
+  {(why || fix) && (
+    <dl class="pitfall-detail">
+      {why && <><dt>原因</dt><dd>{why}</dd></>}
+      {fix && <><dt>对策</dt><dd>{fix}</dd></>}
+    </dl>
+  )}
+</article>
+
+<style>
+  .pitfall {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warm);
+    border-radius: var(--radius);
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--paper);
+  }
+
+  .pitfall-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+  }
+
+  .pitfall-module {
+    color: var(--warm);
+    background: var(--warm-light);
+    padding: 1px 8px;
+    border-radius: var(--radius);
+    text-decoration: none;
+  }
+
+  a.pitfall-module:hover {
+    text-decoration: underline;
+  }
+
+  .pitfall-source {
+    color: var(--gray-500);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pitfall-source:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .pitfall-what {
+    font-weight: 600;
+    line-height: 1.6;
+    margin-bottom: var(--sp-1);
+  }
+
+  .pitfall-detail {
+    display: grid;
+    grid-template-columns: 3em 1fr;
+    gap: 2px var(--sp-2);
+    font-size: var(--fs-meta);
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .pitfall-detail dt {
+    font-family: var(--font-mono);
+    color: var(--gray-500);
+  }
+
+  .pitfall-detail dd {
+    margin: 0;
+  }
+</style>

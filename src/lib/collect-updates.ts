@@ -44,6 +44,18 @@ export async function collectUpdates(): Promise<UpdateItem[]> {
     });
   }
 
+  const retros = await getCollection('retros');
+  for (const r of retros) {
+    updates.push({
+      collection: 'retros',
+      slug: r.id,
+      title: `${r.data.title} 复盘`,
+      date: r.data.updated || '',
+      kind: r.data.updates.length > 1 ? 'evolved' : 'new',
+      href: `/retros/${r.id}/`,
+    });
+  }
+
   const changelogPath = resolve(process.cwd(), '.content/ai-pm-fieldbook/methodology/CHANGELOG.yaml');
   if (existsSync(changelogPath)) {
     const raw = readFileSync(changelogPath, 'utf-8');

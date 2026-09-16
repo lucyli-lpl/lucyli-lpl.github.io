@@ -1,0 +1,172 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import PitfallCard from '../../components/PitfallCard.astro';
+
+const retros = await getCollection('retros');
+const modules = (await getCollection('methodology')).sort((a, b) => a.data.order - b.data.order);
+const moduleById = new Map(modules.map(m => [m.data.order, m]));
+
+interface Row { module: number | null; what: string; why?: string; fix?: string; retroId: string; retroTitle: string }
+const rows: Row[] = [];
+for (const r of retros) {
+  for (const p of r.data.pitfalls) {
+    rows.push({ ...p, retroId: r.id, retroTitle: r.data.title });
+  }
+}
+
+// 按模块分组：有模块的按 order 升序，通用放最后
+const groups = new Map<number | null, Row[]>();
+for (const row of rows) {
+  const k = row.module;
+  if (!groups.has(k)) groups.set(k, []);
+  groups.get(k)!.push(row);
+}
+const orderedKeys = [...groups.keys()].sort((a, b) => {
+  if (a == null) return 1;
+  if (b == null) return -1;
+  return a - b;
+});
+const maxCount = Math.max(1, ...[...groups.values()].map(g => g.length));
+
+const labelOf = (k: number | null) =>
+  k == null ? '通用' : `${String(k).padStart(2, '0')} ${moduleById.get(k)?.data.title ?? `模块 ${k}`}`;
+---
+
+<Base title="坑库">
+  <div class="container-wide">
+    <Breadcrumb items={[
+      { label: '复盘', href: '/retros/' },
+      { label: '坑库' },
+    ]} />
+
+    <PageHeader
+      kicker="PITFALLS"
+      title="坑库"
+      subtitle="跨项目汇总的踩坑记录，按方法论模块归类——哪个模块的坑最多，哪里就最值得重写"
+      meta={[`${rows.length} 个坑`, `来自 ${retros.filter(r => r.data.pitfalls.length).length} 篇复盘`]}
+    />
+
+    {rows.length === 0 ? (
+      <EmptyState title="坑库 · 空" description="还没有复盘记录踩坑" />
+    ) : (
+      <>
+        <section class="heat" aria-label="各模块坑数">
+          {orderedKeys.map(k => {
+            const n = groups.get(k)!.length;
+            return (
+              <a href={`#g-${k ?? 'general'}`} class="heat-row">
+                <span class="heat-label">{labelOf(k)}</span>
+                <span class="heat-bar" style={`--w:${n / maxCount}`} aria-hidden="true" />
+                <span class="heat-num">{n}</span>
+              </a>
+            );
+          })}
+        </section>
+
+        {orderedKeys.map(k => {
+          const m = k != null ? moduleById.get(k) : undefined;
+          return (
+            <section class="group" id={`g-${k ?? 'general'}`}>
+              <h2 class="group-title">
+                {m ? <a href={`/methodology/${m.id}/`}>{labelOf(k)}</a> : labelOf(k)}
+                <span class="group-count">{groups.get(k)!.length}</span>
+              </h2>
+              <div class="group-list">
+                {groups.get(k)!.map(p => (
+                  <PitfallCard
+                    what={p.what} why={p.why} fix={p.fix}
+                    module={p.module}
+                    moduleTitle={m?.data.title}
+                    source={{ title: p.retroTitle, href: `/retros/${p.retroId}/` }}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </>
+    )}
+  </div>
+</Base>
+
+<style>
+  .heat {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--sp-2) var(--sp-3);
+    margin-bottom: var(--sp-6);
+    background: var(--paper);
+  }
+
+  .heat-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 2.5em;
+    align-items: center;
+    gap: var(--sp-2);
+    text-decoration: none;
+    color: var(--ink);
+    font-size: var(--fs-meta);
+  }
+
+  .heat-row:hover .heat-label { text-decoration: underline; }
+
+  .heat-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .heat-bar {
+    display: block;
+    height: 10px;
+    width: calc(var(--w) * 100%);
+    min-width: 3px;
+    background: var(--warm);
+    border-radius: 2px;
+  }
+
+  .heat-num {
+    font-family: var(--font-mono);
+    color: var(--gray-700);
+    text-align: right;
+  }
+
+  .group { margin-bottom: var(--sp-6); }
+
+  .group-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+    padding-bottom: var(--sp-1);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .group-title a { color: var(--ink); text-decoration: none; }
+  .group-title a:hover { text-decoration: underline; }
+
+  .group-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+  }
+
+  .group-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+
+  @media (max-width: 640px) {
+    .heat-row { grid-template-columns: 120px 1fr 2.5em; }
+  }
+</style>

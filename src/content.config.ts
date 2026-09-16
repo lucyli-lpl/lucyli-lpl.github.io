@@ -4,6 +4,7 @@ import { moduleLoader } from './lib/module-loader';
 import { caseLoader } from './lib/case-loader';
 import { skillLoader } from './lib/skill-loader';
 import { presetLoader } from './lib/preset-loader';
+import { retroLoader } from './lib/retro-loader';
 import { resolve } from 'node:path';
 
 const root = process.cwd();
@@ -112,6 +113,31 @@ const presets = defineCollection({
   }),
 });
 
+const retros = defineCollection({
+  loader: retroLoader(resolve(root, '.content/ai-pm-fieldbook/retros')),
+  schema: z.object({
+    title: z.string(),
+    project: z.string().optional(),
+    period: z.string().optional(),
+    status: z.enum(['ongoing', 'closed']).default('ongoing'),
+    affected_modules: z.array(z.number()).default([]),
+    produced_version: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+    updates: z.array(z.object({ date: z.string(), note: z.string() })).default([]),
+    started: z.string().optional(),
+    updated: z.string().optional(),
+    slug: z.string(),
+    chapters: caseChaptersSchema,
+    summary: z.string().default(''),
+    pitfalls: z.array(z.object({
+      module: z.number().nullable(),
+      what: z.string(),
+      why: z.string().optional(),
+      fix: z.string().optional(),
+    })).default([]),
+  }),
+});
+
 const notes = defineCollection({
   loader: glob({ base: 'content/notes', pattern: '*.md' }),
   schema: z.object({
@@ -122,4 +148,4 @@ const notes = defineCollection({
   }),
 });
 
-export const collections = { patterns, methodology, tastings, anatomies, skills, presets, notes };
+export const collections = { patterns, methodology, tastings, anatomies, skills, presets, retros, notes };

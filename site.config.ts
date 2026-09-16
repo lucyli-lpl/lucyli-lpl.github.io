@@ -5,6 +5,7 @@ export const githubSite = 'https://github.com/lucyli-lpl/lucyli-lpl.github.io';
 
 export const nav = [
   { label: '方法论', href: '/methodology/' },
+  { label: '复盘', href: '/retros/' },
   { label: '观察', href: '/observations/' },
   { label: '工具箱', href: '/skills/' },
   { label: '视觉库', href: '/presets/' },
@@ -14,6 +15,7 @@ export const nav = [
 
 export const registry = {
   methodology: { kind: 'modules',  nav: '方法论', path: '/methodology', label: '方法论' },
+  retros:      { kind: 'cases',    nav: '复盘',   path: '/retros',      label: '项目复盘' },
   patterns:    { kind: 'articles', nav: '观察',   path: '/patterns',    label: 'pattern 追踪', listStyle: 'rows' as const },
   tastings:    { kind: 'cases',    nav: '观察',   path: '/tastings',    label: '产品品鉴' },
   anatomies:   { kind: 'cases',    nav: '观察',   path: '/anatomies',   label: '公司拆解' },

@@ -21,7 +21,7 @@ const list = [...entries].reverse();
         const t = TRIGGER_META[e.trigger];
         return (
           <li class={`growth-item growth-item--${e.trigger}`}>
-            <a href={`/methodology/changelog/#v${e.version}`} class="growth-link">
+            <a href={e.retro ? `/retros/${e.retro}/` : `/methodology/changelog/#v${e.version}`} class="growth-link">
               <span class="growth-head">
                 <span class="growth-ver">v{e.version}</span>
                 <span class="growth-trigger" title={t.label}>{t.glyph} {t.label}</span>

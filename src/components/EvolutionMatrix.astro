@@ -70,7 +70,7 @@ const cols = entries.length;
               const e = entries[i];
               return hit ? (
                 <td class="evo-cell">
-                  <a href={`/methodology/changelog/#v${e.version}`} class={`evo-dot evo-dot--${e.trigger}`} title={`v${e.version} · ${e.summary}`}>
+                  <a href={e.retro ? `/retros/${e.retro}/` : `/methodology/changelog/#v${e.version}`} class={`evo-dot evo-dot--${e.trigger}`} title={`v${e.version} · ${e.summary}${e.retro ? '（点击查看复盘）' : ''}`}>
                     <span class="sr-only">v{e.version} 修订了本模块</span>
                   </a>
                 </td>

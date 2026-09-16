@@ -14,6 +14,8 @@ export interface ChangelogEntry {
   trigger: TriggerKind;
   /** 触发源的具体说明（如复盘/文章名），可选 */
   trigger_ref?: string;
+  /** 关联的复盘目录名（retros/<slug>），有则站点链接到复盘页 */
+  retro?: string;
 }
 
 export const TRIGGER_META: Record<TriggerKind, { label: string; glyph: string }> = {
@@ -31,6 +33,7 @@ interface RawEntry {
   details?: string;
   trigger?: string;
   trigger_ref?: string;
+  retro?: string;
 }
 
 function inferTrigger(summary: string): TriggerKind {
@@ -77,6 +80,7 @@ export function loadChangelog(): ChangelogEntry[] {
         details: e.details,
         trigger: isTrigger(e.trigger) ? e.trigger : inferTrigger(summary),
         trigger_ref: e.trigger_ref,
+        retro: e.retro != null ? String(e.retro) : undefined,
       };
     })
     .sort((a, b) => compareVersion(a.version, b.version));

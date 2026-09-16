@@ -28,10 +28,17 @@ const entries = loadChangelog().reverse();
           <div class="version-header">
             <span class="version-tag">v{entry.version}</span>
             {entry.date && <span class="version-date">{entry.date}</span>}
-            <span class={`version-trigger version-trigger--${entry.trigger}`} title="触发源">
-              {TRIGGER_META[entry.trigger].glyph} {TRIGGER_META[entry.trigger].label}
-              {entry.trigger_ref && <span class="version-trigger-ref">· {entry.trigger_ref}</span>}
-            </span>
+            {entry.retro ? (
+              <a href={`/retros/${entry.retro}/`} class={`version-trigger version-trigger--${entry.trigger}`} title="查看复盘">
+                {TRIGGER_META[entry.trigger].glyph} {TRIGGER_META[entry.trigger].label}
+                <span class="version-trigger-ref">· {entry.trigger_ref ?? entry.retro} →</span>
+              </a>
+            ) : (
+              <span class={`version-trigger version-trigger--${entry.trigger}`} title="触发源">
+                {TRIGGER_META[entry.trigger].glyph} {TRIGGER_META[entry.trigger].label}
+                {entry.trigger_ref && <span class="version-trigger-ref">· {entry.trigger_ref}</span>}
+              </span>
+            )}
             <span class="version-modules">
               模块 {entry.modules.join(', ')}
             </span>
@@ -65,6 +72,9 @@ const entries = loadChangelog().reverse();
   .version-entry:target {
     border-color: var(--ink);
   }
+
+  a.version-trigger { text-decoration: none; }
+  a.version-trigger:hover { text-decoration: underline; }
 
   .version-trigger {
     font-family: var(--font-mono);

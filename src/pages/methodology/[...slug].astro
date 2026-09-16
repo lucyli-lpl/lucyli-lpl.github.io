@@ -25,6 +25,9 @@ const { entry, prev, next } = Astro.props;
 const { order, title, one_liner, chapters, skills, since_version, hasDiagram, slug } = entry.data;
 const orderStr = String(order).padStart(2, '0');
 const growth = entriesForModule(loadChangelog(), order);
+const relatedRetros = (await getCollection('retros'))
+  .filter(r => r.data.affected_modules.includes(order))
+  .sort((a, b) => (b.data.updated || '').localeCompare(a.data.updated || ''));
 
 const headings = chapters.map((ch, i) => ({
   slug: `ch-${String(i + 1).padStart(2, '0')}`,
@@ -94,6 +97,21 @@ const headings = chapters.map((ch, i) => ({
           </div>
         </div>
       )}
+      {relatedRetros.length > 0 && (
+        <div class="related-retros">
+          <p class="sidebar-label">相关复盘 · {relatedRetros.length}</p>
+          <ul class="retro-links">
+            {relatedRetros.map(r => (
+              <li>
+                <a href={`/retros/${r.id}/`}>{r.data.title}</a>
+                {r.data.pitfalls.filter(p => p.module === order).length > 0 && (
+                  <span class="retro-pits">{r.data.pitfalls.filter(p => p.module === order).length} 个坑</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <GrowthLog entries={growth} />
     </aside>
   </div>
@@ -153,6 +171,37 @@ const headings = chapters.map((ch, i) => ({
     display: flex;
     flex-wrap: wrap;
     gap: 0.5em;
+  }
+
+  .related-retros { margin-top: var(--sp-4); }
+
+  .retro-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .retro-links li {
+    font-size: var(--fs-meta);
+    line-height: 1.5;
+    margin-bottom: var(--sp-1);
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-1);
+  }
+
+  .retro-links a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .retro-links a:hover { text-decoration: underline; }
+
+  .retro-pits {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--warm);
+    white-space: nowrap;
   }
 
   @media (max-width: 900px) {

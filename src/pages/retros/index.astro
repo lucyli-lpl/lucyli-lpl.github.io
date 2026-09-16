@@ -1,0 +1,161 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import Tag from '../../components/Tag.astro';
+
+const all = await getCollection('retros');
+const retros = all.sort((a, b) => (b.data.updated || '').localeCompare(a.data.updated || ''));
+const ongoing = retros.filter(r => r.data.status === 'ongoing').length;
+const pitfallCount = retros.reduce((n, r) => n + r.data.pitfalls.length, 0);
+---
+
+<Base title="项目复盘">
+  <div class="container-wide">
+    <PageHeader
+      kicker="RETROSPECTIVES"
+      title="项目复盘"
+      subtitle="从真实项目里长出来的经验——每一次复盘都可能推动方法论的一次修订"
+      meta={[
+        `${retros.length} 篇复盘`,
+        ongoing ? `${ongoing} 篇进行中` : '',
+        pitfallCount ? `${pitfallCount} 个坑` : '',
+      ].filter(Boolean)}
+    />
+
+    {retros.length === 0 ? (
+      <EmptyState title="项目复盘 · 筹备中" description="第一篇复盘还在写" />
+    ) : (
+      <>
+        <div class="retro-list">
+          {retros.map(r => (
+            <a href={`/retros/${r.id}/`} class="retro-card">
+              <div class="card-top">
+                <span class="retro-title">{r.data.title}</span>
+                <span class={`status status--${r.data.status}`}>
+                  {r.data.status === 'ongoing' ? '进行中' : '已封版'}
+                </span>
+              </div>
+              {r.data.summary && <p class="retro-summary">{r.data.summary.split('\n')[0]}</p>}
+              <div class="card-meta">
+                {r.data.period && <span>{r.data.period}</span>}
+                {r.data.updated && <span>更新 {r.data.updated}</span>}
+                <span>{r.data.chapters.length} 章</span>
+                {r.data.pitfalls.length > 0 && <span class="meta-warm">{r.data.pitfalls.length} 个坑</span>}
+                {r.data.produced_version && <span>→ 方法论 v{r.data.produced_version}</span>}
+              </div>
+              <div class="card-tags">
+                {r.data.affected_modules.map(m => <Tag label={`模块 ${String(m).padStart(2, '0')}`} />)}
+                {r.data.tags.map(t => <Tag label={t} />)}
+              </div>
+            </a>
+          ))}
+        </div>
+
+        {pitfallCount > 0 && (
+          <a href="/pitfalls/" class="pitfalls-link">
+            <span class="pl-title">坑库 · 跨项目汇总</span>
+            <span class="pl-meta">{pitfallCount} 个坑，按方法论模块归类 →</span>
+          </a>
+        )}
+      </>
+    )}
+  </div>
+</Base>
+
+<style>
+  .retro-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+  }
+
+  .retro-card {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--sp-3);
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.1s;
+  }
+
+  .retro-card:hover {
+    border-color: var(--ink);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-1);
+  }
+
+  .retro-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    font-weight: 600;
+  }
+
+  .status {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    padding: 2px 8px;
+    border-radius: var(--radius);
+    white-space: nowrap;
+  }
+
+  .status--ongoing { background: var(--accent-light); color: var(--accent); }
+  .status--closed  { background: var(--gray-100);    color: var(--gray-700); }
+
+  .retro-summary {
+    font-size: var(--fs-body);
+    color: var(--gray-700);
+    line-height: var(--lh-body);
+    margin-bottom: var(--sp-2);
+  }
+
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    margin-bottom: var(--sp-1);
+  }
+
+  .meta-warm { color: var(--warm); }
+
+  .card-tags {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+  }
+
+  .pitfalls-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warm);
+    border-radius: var(--radius);
+    padding: var(--sp-2) var(--sp-3);
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.1s;
+  }
+
+  .pitfalls-link:hover { border-color: var(--ink); border-left-color: var(--warm); }
+
+  .pl-title { font-weight: 600; }
+
+  .pl-meta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+  }
+</style>
