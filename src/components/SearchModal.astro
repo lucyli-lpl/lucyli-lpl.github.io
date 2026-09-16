@@ -21,18 +21,41 @@
     document.body.style.overflow = '';
   }
 
+  // pagefind-ui.js 是挂在 window 上的传统脚本，不是 ES module，不能用 import()
+  function loadPagefind(): Promise<void> {
+    if ((window as any).PagefindUI) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = '/pagefind/pagefind-ui.css';
+      document.head.appendChild(css);
+      const s = document.createElement('script');
+      s.src = '/pagefind/pagefind-ui.js';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('pagefind-ui.js failed to load'));
+      document.head.appendChild(s);
+    });
+  }
+
+  let initialized = false;
   trigger?.addEventListener('click', async () => {
-    if (!window.__pagefind) {
-      const pfPath = '/pagefind/pagefind-ui.js';
-      const pf = await import(/* @vite-ignore */ pfPath);
-      new pf.PagefindUI({
+    openSearch();
+    if (initialized) return;
+    try {
+      await loadPagefind();
+      new (window as any).PagefindUI({
         element: '#search-container',
         showSubResults: true,
         showImages: false,
+        translations: { placeholder: '搜索方法论、pattern、复盘…', zero_results: '没有找到「[SEARCH_TERM]」' },
       });
-      window.__pagefind = true;
+      initialized = true;
+      modal?.querySelector('input')?.focus();
+    } catch (err) {
+      const c = document.getElementById('search-container');
+      if (c) c.textContent = '搜索索引加载失败（本地 dev 模式下没有索引，需 build 后使用）';
+      console.error(err);
     }
-    openSearch();
   });
 
   modal?.querySelector('[data-close]')?.addEventListener('click', closeSearch);
