@@ -1,0 +1,32 @@
+---
+interface Props {
+  status: 'concept' | 'landed' | 'evolving' | 'converging';
+}
+
+const { status } = Astro.props;
+
+const config = {
+  concept:    { label: '概念期', fg: 'var(--warm)',   bg: 'var(--warm-light)' },
+  landed:     { label: '已落地', fg: 'var(--ink)',     bg: 'var(--gray-100)' },
+  evolving:   { label: '进化中', fg: 'var(--accent)',  bg: 'var(--accent-light)' },
+  converging: { label: '趋同期', fg: 'var(--green)',   bg: 'var(--green-light)' },
+};
+
+const { label, fg, bg } = config[status];
+---
+
+<span class="status-badge" style={`color: ${fg}; background: ${bg};`}>
+  {label}
+</span>
+
+<style>
+  .status-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: var(--radius);
+    white-space: nowrap;
+  }
+</style>

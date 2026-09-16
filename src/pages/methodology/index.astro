@@ -1,0 +1,83 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Verdict from '../../components/Verdict.astro';
+import CardModule from '../../components/CardModule.astro';
+
+const allModules = await getCollection('methodology');
+const modules = allModules.sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base title="方法论">
+  <div class="container-wide">
+    <PageHeader
+      kicker="METHODOLOGY · v2.1"
+      title="AI 应用能力边界方法论"
+      subtitle="能力三区不是难度分级，而是三种产品承诺——核心区保证结果，边缘区保证处理，界外区保证边界"
+      meta={[`${modules.length} 个模块`]}
+    />
+
+    <Verdict text="能力三区不是难度分级，而是三种产品承诺——核心区保证结果，边缘区保证处理，界外区保证边界。" />
+
+    <div class="module-grid">
+      {modules.map(m => (
+        <CardModule
+          order={String(m.data.order).padStart(2, '0')}
+          title={m.data.title}
+          oneLiner={m.data.one_liner}
+          chapterCount={m.data.chapters.length}
+          skills={m.data.skills}
+          href={`/methodology/${m.id}/`}
+        />
+      ))}
+    </div>
+
+    <a href="/methodology/changelog/" class="changelog-link">
+      <span class="cl-title">迭代记录 v1 → v2.1</span>
+      <span class="cl-meta">查看版本历史</span>
+    </a>
+  </div>
+</Base>
+
+<style>
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+  }
+
+  @media (max-width: 640px) {
+    .module-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .changelog-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--sp-2) var(--sp-3);
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.1s;
+  }
+
+  .changelog-link:hover {
+    border-color: var(--ink);
+  }
+
+  .cl-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+  }
+
+  .cl-meta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+  }
+</style>

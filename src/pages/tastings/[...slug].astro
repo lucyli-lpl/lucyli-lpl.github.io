@@ -1,0 +1,89 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ChapterNav from '../../components/ChapterNav.astro';
+import Verdict from '../../components/Verdict.astro';
+import Tag from '../../components/Tag.astro';
+
+export async function getStaticPaths() {
+  const tastings = await getCollection('tastings');
+  return tastings.map(entry => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { product, company, product_launched, analyzed, verdict, patterns, tags, chapters } = entry.data;
+
+const headings = chapters.map((ch, i) => ({
+  slug: `ch-${String(i + 1).padStart(2, '0')}`,
+  text: `${String(i + 1).padStart(2, '0')}. ${ch.title}`,
+  depth: 2,
+}));
+---
+
+<Base title={`${product} 品鉴`}>
+  <div class="layout-sidebar">
+    <div class="main-content">
+      <Breadcrumb items={[
+        { label: '品鉴', href: '/tastings/' },
+        { label: product },
+      ]} />
+
+      <PageHeader
+        kicker={`TASTING · ${company}`}
+        title={product}
+        meta={[
+          product_launched ? `上线 ${product_launched}` : '',
+          analyzed ? `品鉴 ${analyzed}` : '',
+          `${chapters.length} 章`,
+        ].filter(Boolean)}
+      />
+
+      <Verdict text={verdict} />
+
+      <div class="tags-row">
+        {(patterns || []).map(p => <Tag label={p} href={`/patterns/${p}/`} />)}
+        {(tags || []).map(t => <Tag label={t} />)}
+      </div>
+
+      <article class="prose" data-pagefind-meta="collection:产品品鉴">
+        {chapters.map((ch, i) => {
+          const chNum = String(i + 1).padStart(2, '0');
+          return (
+            <section>
+              <h2 id={`ch-${chNum}`}>{chNum}. {ch.title}</h2>
+              <Fragment set:html={ch.body} />
+            </section>
+          );
+        })}
+      </article>
+    </div>
+
+    <aside class="sidebar">
+      <ChapterNav headings={headings} />
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .tags-row {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-4);
+  }
+
+  .sidebar {
+    order: 1;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar {
+      order: -1;
+    }
+  }
+</style>

@@ -1,0 +1,37 @@
+---
+interface Props {
+  label: string;
+  href?: string;
+  variant?: 'neutral' | 'status';
+}
+
+const { label, href, variant = 'neutral' } = Astro.props;
+const Tag = href ? 'a' : 'span';
+---
+
+<Tag href={href} class:list={['tag', variant, { clickable: !!href }]}>
+  {label}
+</Tag>
+
+<style>
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    padding: 2px 8px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .clickable {
+    cursor: pointer;
+    transition: border-color 0.1s;
+  }
+
+  .clickable:hover {
+    border-color: var(--ink);
+  }
+</style>

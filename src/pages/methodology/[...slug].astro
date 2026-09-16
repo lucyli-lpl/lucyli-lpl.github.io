@@ -1,0 +1,159 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ChapterNav from '../../components/ChapterNav.astro';
+import Tag from '../../components/Tag.astro';
+
+export async function getStaticPaths() {
+  const modules = await getCollection('methodology');
+  const sorted = modules.sort((a, b) => a.data.order - b.data.order);
+  return sorted.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: i > 0 ? sorted[i - 1] : null,
+      next: i < sorted.length - 1 ? sorted[i + 1] : null,
+    },
+  }));
+}
+
+const { entry, prev, next } = Astro.props;
+const { order, title, one_liner, chapters, skills, since_version, hasDiagram, slug } = entry.data;
+const orderStr = String(order).padStart(2, '0');
+
+const headings = chapters.map((ch, i) => ({
+  slug: `ch-${String(i + 1).padStart(2, '0')}`,
+  text: `${String(i + 1).padStart(2, '0')}. ${ch.title}`,
+  depth: 2,
+}));
+---
+
+<Base title={`${orderStr}. ${title}`}>
+  <div class="layout-sidebar">
+    <div class="main-content">
+      <Breadcrumb items={[
+        { label: '方法论', href: '/methodology/' },
+        { label: title },
+      ]} />
+
+      <PageHeader
+        kicker={`MODULE ${orderStr}`}
+        title={title}
+        subtitle={one_liner}
+        meta={[
+          `${chapters.length} 章`,
+          since_version ? `v${since_version} 起` : '',
+        ].filter(Boolean)}
+      />
+
+      {hasDiagram && (
+        <figure class="module-diagram">
+          <img src={`/content/methodology/${slug}/diagram.svg`} alt={`${title} 示意图`} loading="lazy" />
+        </figure>
+      )}
+
+      <article class="prose" data-pagefind-meta={`collection:方法论`}>
+        {chapters.map((ch, i) => {
+          const chNum = String(i + 1).padStart(2, '0');
+          return (
+            <section>
+              <h2 id={`ch-${chNum}`}>{chNum}. {ch.title}</h2>
+              <Fragment set:html={ch.body} />
+            </section>
+          );
+        })}
+      </article>
+
+      <nav class="module-nav">
+        {prev && (
+          <a href={`/methodology/${prev.id}/`} class="nav-prev">
+            ← {String(prev.data.order).padStart(2, '0')}. {prev.data.title}
+          </a>
+        )}
+        <span class="nav-spacer" />
+        {next && (
+          <a href={`/methodology/${next.id}/`} class="nav-next">
+            {String(next.data.order).padStart(2, '0')}. {next.data.title} →
+          </a>
+        )}
+      </nav>
+    </div>
+
+    <aside class="sidebar">
+      <ChapterNav headings={headings} />
+      {skills.length > 0 && (
+        <div class="related-skills">
+          <p class="sidebar-label">关联 skill</p>
+          <div class="skill-tags">
+            {skills.map(s => <Tag label={s} href={`/skills/${s}/`} />)}
+          </div>
+        </div>
+      )}
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .module-diagram {
+    margin-bottom: var(--sp-4);
+  }
+
+  .module-diagram img {
+    width: 100%;
+    height: auto;
+  }
+
+  .module-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    margin-top: var(--sp-6);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .nav-prev, .nav-next {
+    font-size: var(--fs-meta);
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .nav-prev:hover, .nav-next:hover {
+    text-decoration: underline;
+  }
+
+  .nav-spacer {
+    flex: 1;
+  }
+
+  .sidebar {
+    order: 1;
+  }
+
+  .related-skills {
+    margin-top: var(--sp-4);
+  }
+
+  .sidebar-label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--sp-1);
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar {
+      order: -1;
+    }
+  }
+</style>

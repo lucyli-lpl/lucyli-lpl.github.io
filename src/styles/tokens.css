@@ -1,0 +1,46 @@
+:root {
+  /* 色彩 — 继承 scholar */
+  --ink:          #1a1a1a;
+  --paper:        #fafaf7;
+  --paper-2:      #f3f3ef;
+  --accent:       #2563eb;
+  --accent-light: #dbeafe;
+  --warm:         #c2410c;
+  --warm-light:   #fff7ed;
+  --green:        #166534;
+  --green-light:  #f0fdf4;
+  --gray-100:     #f3f4f6;
+  --gray-200:     #e5e7eb;
+  --gray-300:     #d1d5db;
+  --gray-500:     #6b7280;
+  --gray-700:     #374151;
+  --border:       #d1d5db;
+
+  /* 字体 */
+  --font-display: "Noto Serif SC", "Songti SC", serif;
+  --font-body:    "Inter", -apple-system, "PingFang SC", "Noto Sans SC", sans-serif;
+  --font-mono:    "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+  /* 字号 */
+  --fs-h1: 2rem;
+  --fs-h2: 1.4rem;
+  --fs-h3: 1.05rem;
+  --fs-body: 0.95rem;
+  --fs-meta: 0.8rem;
+  --fs-tag: 0.7rem;
+  --lh-body: 1.75;
+
+  /* 间距（8 基准） */
+  --sp-1: 0.5rem;
+  --sp-2: 1rem;
+  --sp-3: 1.5rem;
+  --sp-4: 2rem;
+  --sp-6: 3rem;
+  --sp-8: 4rem;
+
+  /* 布局 */
+  --w-prose: 780px;
+  --w-wide:  1080px;
+  --w-side:  220px;
+  --radius:  4px;
+}

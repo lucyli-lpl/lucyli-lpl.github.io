@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { githubUser } from '../../../site.config';
+---
+
+<Base title="关于">
+  <div class="container-prose">
+    <PageHeader
+      kicker="ABOUT"
+      title="关于这个站"
+    />
+    <div class="prose">
+      <p>这是一个 AI PM 的个人知识工坊——把散落在三个仓库里的方法论、观察和工具聚合到一起，形成可浏览、可搜索、可交叉引用的知识网络。</p>
+
+      <h2>内容来源</h2>
+      <ul>
+        <li><a href={`https://github.com/${githubUser}/ai-pm-fieldbook`} target="_blank" rel="noopener"><strong>ai-pm-fieldbook</strong></a> — 企业级 AI 产品能力边界方法论，从三区分类到生产护栏的完整实践框架</li>
+        <li><a href={`https://github.com/${githubUser}/ai-design-patterns`} target="_blank" rel="noopener"><strong>ai-design-patterns</strong></a> — 按能力模式（而非公司）追踪 AI 产品设计趋势的活字典</li>
+        <li><a href={`https://github.com/${githubUser}/ai-business-anatomy`} target="_blank" rel="noopener"><strong>ai-business-anatomy</strong></a> — AI 产品品鉴与公司拆解：用结构化框架深度解读产品决策</li>
+      </ul>
+
+      <h2>技术栈</h2>
+      <ul>
+        <li>Astro 5 静态站点生成</li>
+        <li>GitHub Pages 托管</li>
+        <li>Pagefind 全站搜索</li>
+        <li>内容仓库通过 repository_dispatch 触发自动重建</li>
+      </ul>
+
+      <h2>许可</h2>
+      <p>内容以 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 授权。站点代码开源。</p>
+    </div>
+  </div>
+</Base>

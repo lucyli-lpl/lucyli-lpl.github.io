@@ -1,0 +1,91 @@
+---
+interface TimelineNode {
+  date: string;
+  driver?: string;
+  text: string;
+}
+
+interface Props {
+  nodes: TimelineNode[];
+}
+
+const { nodes } = Astro.props;
+---
+
+<div class="timeline">
+  {nodes.map(node => (
+    <div class="timeline-node">
+      <div class="timeline-dot" />
+      <div class="timeline-content">
+        <div class="timeline-meta">
+          <span class="timeline-date">{node.date}</span>
+          {node.driver && <span class="timeline-driver">{node.driver}</span>}
+        </div>
+        <p class="timeline-text">{node.text}</p>
+      </div>
+    </div>
+  ))}
+</div>
+
+<style>
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: var(--gray-200);
+  }
+
+  .timeline-node {
+    position: relative;
+    padding-bottom: var(--sp-4);
+  }
+
+  .timeline-node:last-child {
+    padding-bottom: 0;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -24px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .timeline-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 0.25em;
+  }
+
+  .timeline-date {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+  }
+
+  .timeline-driver {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    padding: 1px 6px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    color: var(--gray-500);
+  }
+
+  .timeline-text {
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+  }
+</style>

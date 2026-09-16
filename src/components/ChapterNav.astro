@@ -1,0 +1,104 @@
+---
+interface Heading {
+  slug: string;
+  text: string;
+  depth: number;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+---
+
+<nav class="chapter-nav" aria-label="章节目录">
+  <p class="chapter-nav-title">目录</p>
+  <ul>
+    {headings.map(h => (
+      <li class:list={[{ sub: h.depth > 2 }]}>
+        <a href={`#${h.slug}`}>{h.text}</a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .chapter-nav {
+    position: sticky;
+    top: 80px;
+    font-size: var(--fs-meta);
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+
+  .chapter-nav-title {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--sp-1);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    border-left: 2px solid transparent;
+    padding: 0.25em 0 0.25em 0.75em;
+  }
+
+  li.sub {
+    padding-left: calc(0.75em + var(--sp-2));
+  }
+
+  li.active {
+    border-left-color: var(--ink);
+  }
+
+  a {
+    color: var(--gray-500);
+    text-decoration: none;
+    transition: color 0.1s;
+  }
+
+  a:hover, li.active a {
+    color: var(--ink);
+  }
+
+  @media (max-width: 900px) {
+    .chapter-nav {
+      position: static;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: var(--sp-2);
+      margin-bottom: var(--sp-4);
+    }
+  }
+</style>
+
+<script>
+  const nav = document.querySelector('.chapter-nav');
+  if (nav) {
+    const links = nav.querySelectorAll('a');
+    const headings = Array.from(links).map(a => {
+      const id = a.getAttribute('href')?.slice(1);
+      return id ? document.getElementById(id) : null;
+    }).filter(Boolean);
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          nav.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+          const link = nav.querySelector(`a[href="#${entry.target.id}"]`);
+          link?.parentElement?.classList.add('active');
+        }
+      }
+    }, { rootMargin: '-80px 0px -60% 0px' });
+
+    headings.forEach(h => { if (h) observer.observe(h); });
+  }
+</script>

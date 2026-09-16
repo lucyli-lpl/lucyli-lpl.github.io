@@ -1,0 +1,114 @@
+---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import * as yaml from 'js-yaml';
+import Base from '../../../layouts/Base.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+
+interface ChangelogEntry {
+  version: string;
+  date?: string;
+  summary: string;
+  modules: number[];
+  details: string;
+}
+
+const raw = readFileSync(
+  resolve(process.cwd(), '.content/ai-pm-fieldbook/methodology/CHANGELOG.yaml'),
+  'utf-8'
+);
+const entries = yaml.load(raw) as ChangelogEntry[];
+---
+
+<Base title="方法论迭代记录">
+  <div class="container-prose">
+    <Breadcrumb items={[
+      { label: '方法论', href: '/methodology/' },
+      { label: '迭代记录' },
+    ]} />
+
+    <PageHeader
+      kicker="CHANGELOG"
+      title="方法论迭代记录"
+      subtitle="从 v1 到最新版本的演进脉络"
+      meta={[`${entries.length} 个版本`]}
+    />
+
+    <div class="changelog">
+      {entries.map(entry => (
+        <article class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v{entry.version}</span>
+            {entry.date && <span class="version-date">{entry.date}</span>}
+            <span class="version-modules">
+              模块 {entry.modules.join(', ')}
+            </span>
+          </div>
+          <p class="version-summary">{entry.summary}</p>
+          {entry.details && <div class="version-details">
+            {entry.details.trim().split('\n').map(line => (
+              <p>{line}</p>
+            ))}
+          </div>}
+        </article>
+      ))}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .changelog {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+  }
+
+  .version-entry {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--sp-3);
+  }
+
+  .version-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+  }
+
+  .version-tag {
+    font-family: var(--font-mono);
+    font-size: var(--fs-body);
+    font-weight: 700;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2px 10px;
+    border-radius: var(--radius);
+  }
+
+  .version-date {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+  }
+
+  .version-modules {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    margin-left: auto;
+  }
+
+  .version-summary {
+    font-weight: 600;
+    margin-bottom: var(--sp-2);
+  }
+
+  .version-details p {
+    font-size: var(--fs-meta);
+    color: var(--gray-700);
+    line-height: var(--lh-body);
+    margin-bottom: 0.25em;
+  }
+</style>

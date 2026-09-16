@@ -1,0 +1,72 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+
+const patterns = await getCollection('patterns');
+---
+
+<Base title="观察">
+  <div class="container-wide">
+    <PageHeader
+      kicker="OBSERVATIONS"
+      title="观察"
+      subtitle="追踪 AI 产品设计模式的演化与具体产品的深度品鉴"
+    />
+
+    <div class="group-list">
+      <a href="/patterns/" class="group-card">
+        <h3>Pattern 追踪</h3>
+        <p class="group-count">{patterns.length} 个 pattern</p>
+        <p class="group-desc">追踪 AI 产品设计模式从概念到落地的演化</p>
+      </a>
+      <a href="/tastings/" class="group-card">
+        <h3>产品品鉴</h3>
+        <p class="group-desc">用品鉴框架深度拆解具体 AI 产品</p>
+      </a>
+      <a href="/anatomies/" class="group-card">
+        <h3>公司拆解</h3>
+        <p class="group-desc">从招股书等公开材料拆解 AI 公司</p>
+      </a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .group-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--sp-3);
+  }
+
+  .group-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--sp-3);
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.1s;
+  }
+
+  .group-card:hover {
+    border-color: var(--ink);
+  }
+
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    margin-bottom: var(--sp-1);
+  }
+
+  .group-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    margin-bottom: 0.5em;
+  }
+
+  .group-desc {
+    font-size: var(--fs-meta);
+    color: var(--gray-700);
+  }
+</style>

@@ -1,0 +1,148 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import Tag from '../../components/Tag.astro';
+
+const allPresets = await getCollection('presets');
+
+const byType = new Map<string, typeof allPresets>();
+for (const p of allPresets) {
+  const type = p.data.type_label;
+  if (!byType.has(type)) byType.set(type, []);
+  byType.get(type)!.push(p);
+}
+---
+
+<Base title="视觉库">
+  <div class="container-wide">
+    <PageHeader
+      kicker="PRESETS"
+      title="视觉库"
+      subtitle="AI 产出的 HTML 报告视觉预设"
+      meta={[`${allPresets.length} 个预设`, `${byType.size} 个类型`]}
+    />
+
+    {allPresets.length === 0 ? (
+      <EmptyState title="视觉库 · 筹备中" description="尚无预设内容" />
+    ) : (
+      <div class="preset-sections">
+        {[...byType.entries()].map(([type, presets]) => (
+          <section class="type-section">
+            <h2 class="type-heading">{type}</h2>
+            {presets[0].data.type_description && (
+              <p class="type-desc">{presets[0].data.type_description}</p>
+            )}
+            <div class="preset-grid">
+              {presets.map(p => (
+                <a href={`/presets/${p.id}/`} class="preset-card">
+                  {p.data.hasPreview && (
+                    <img
+                      src={`/presets/${p.data.output_type}/${p.data.preset_name}/preview.png`}
+                      alt={`${p.data.preset_name} preview`}
+                      class="preset-preview"
+                      loading="lazy"
+                    />
+                  )}
+                  <div class="preset-info">
+                    <h3 class="preset-name">{p.data.preset_name}</h3>
+                    {p.data.chinese_name && <span class="preset-cn">{p.data.chinese_name}</span>}
+                    {p.data.one_liner && <p class="preset-liner">{p.data.one_liner}</p>}
+                    <div class="preset-tags">
+                      {p.data.tags.map(t => <Tag label={t} />)}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    )}
+  </div>
+</Base>
+
+<style>
+  .preset-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-6);
+  }
+
+  .type-heading {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    font-weight: 700;
+    margin-bottom: var(--sp-1);
+  }
+
+  .type-desc {
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    margin-bottom: var(--sp-3);
+  }
+
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-3);
+  }
+
+  @media (max-width: 640px) {
+    .preset-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .preset-card {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.1s;
+  }
+
+  .preset-card:hover {
+    border-color: var(--ink);
+  }
+
+  .preset-preview {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .preset-info {
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .preset-name {
+    font-family: var(--font-mono);
+    font-size: var(--fs-body);
+    font-weight: 600;
+  }
+
+  .preset-cn {
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    margin-left: var(--sp-1);
+  }
+
+  .preset-liner {
+    font-size: var(--fs-meta);
+    color: var(--gray-700);
+    margin: var(--sp-1) 0;
+    line-height: var(--lh-body);
+  }
+
+  .preset-tags {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+    margin-top: var(--sp-1);
+  }
+</style>

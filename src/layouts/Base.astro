@@ -1,0 +1,39 @@
+---
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SearchModal from '../components/SearchModal.astro';
+import '../styles/tokens.css';
+import '../styles/global.css';
+import '../styles/prose.css';
+
+import { siteTitle } from '../../site.config';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const pageTitle = title ? `${title} — ${siteTitle}` : siteTitle;
+const pageDescription = description || 'AI PM 的方法论、观察与工具箱';
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDescription} />
+  <link rel="alternate" type="application/rss+xml" title={siteTitle} href="/rss.xml" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body>
+  <SiteHeader />
+  <main data-pagefind-body>
+    <slot />
+  </main>
+  <SiteFooter />
+  <SearchModal />
+</body>
+</html>

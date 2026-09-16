@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="404">
+  <div class="container-prose not-found">
+    <h1>404</h1>
+    <p>页面不存在。</p>
+    <a href="/">返回首页</a>
+  </div>
+</Base>
+
+<style>
+  .not-found {
+    text-align: center;
+    padding: var(--sp-8) 0;
+  }
+
+  h1 {
+    font-family: var(--font-mono);
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: var(--sp-2);
+  }
+
+  p {
+    color: var(--gray-500);
+    margin-bottom: var(--sp-4);
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

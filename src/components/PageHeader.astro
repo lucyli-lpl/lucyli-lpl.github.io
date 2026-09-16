@@ -1,0 +1,54 @@
+---
+interface Props {
+  kicker?: string;
+  title: string;
+  subtitle?: string;
+  meta?: string[];
+}
+
+const { kicker, title, subtitle, meta } = Astro.props;
+---
+
+<div class="page-header">
+  {kicker && <p class="kicker">{kicker}</p>}
+  <h1>{title}</h1>
+  {subtitle && <p class="subtitle">{subtitle}</p>}
+  {meta && meta.length > 0 && (
+    <p class="meta-row">{meta.join(' · ')}</p>
+  )}
+</div>
+
+<style>
+  .page-header {
+    margin-bottom: var(--sp-4);
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-500);
+    margin-bottom: var(--sp-1);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: var(--fs-h1);
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: var(--sp-1);
+  }
+
+  .subtitle {
+    font-family: var(--font-body);
+    color: var(--gray-700);
+    margin-bottom: var(--sp-1);
+  }
+
+  .meta-row {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+  }
+</style>

@@ -1,0 +1,96 @@
+---
+import StatusBadge from './StatusBadge.astro';
+import Tag from './Tag.astro';
+
+interface Props {
+  name: string;
+  chineseName: string;
+  status: 'concept' | 'landed' | 'evolving' | 'converging';
+  heat: number;
+  firstSeen: string;
+  href: string;
+  tags?: string[];
+}
+
+const { name, chineseName, status, heat, firstSeen, href, tags = [] } = Astro.props;
+
+const heatDots = '●'.repeat(heat) + '○'.repeat(5 - heat);
+---
+
+<a href={href} class="list-row">
+  <span class="row-name">
+    <span class="name-en">{name}</span>
+    <span class="name-cn">{chineseName}</span>
+  </span>
+  <span class="row-status"><StatusBadge status={status} /></span>
+  <span class="row-heat" title={`heat ${heat}/5`}>{heatDots}</span>
+  <span class="row-date">{firstSeen}</span>
+  <span class="row-tags">
+    {tags.slice(0, 3).map(t => <Tag label={t} />)}
+  </span>
+</a>
+
+<style>
+  .list-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) 0;
+    border-bottom: 1px solid var(--gray-200);
+    text-decoration: none;
+    color: var(--ink);
+    transition: background-color 0.1s;
+  }
+
+  .list-row:hover {
+    background: var(--paper-2);
+  }
+
+  .row-name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5em;
+    min-width: 0;
+  }
+
+  .name-en {
+    font-family: var(--font-body);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .name-cn {
+    color: var(--gray-500);
+    font-size: var(--fs-meta);
+    white-space: nowrap;
+  }
+
+  .row-heat {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    white-space: nowrap;
+  }
+
+  .row-date {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    white-space: nowrap;
+  }
+
+  .row-tags {
+    display: flex;
+    gap: 4px;
+  }
+
+  @media (max-width: 640px) {
+    .list-row {
+      grid-template-columns: 1fr auto;
+    }
+    .row-heat, .row-date, .row-tags {
+      display: none;
+    }
+  }
+</style>

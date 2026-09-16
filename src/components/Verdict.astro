@@ -1,0 +1,24 @@
+---
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<div class="verdict">
+  <p>{text}</p>
+</div>
+
+<style>
+  .verdict {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-display);
+    font-weight: 600;
+    padding: var(--sp-4);
+    border-radius: var(--radius);
+    margin: var(--sp-4) 0;
+    line-height: 1.6;
+  }
+</style>

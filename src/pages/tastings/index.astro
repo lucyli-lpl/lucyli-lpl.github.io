@@ -1,0 +1,111 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import Tag from '../../components/Tag.astro';
+
+const allTastings = await getCollection('tastings');
+const tastings = allTastings.sort((a, b) => {
+  const da = a.data.analyzed || '';
+  const db = b.data.analyzed || '';
+  return db.localeCompare(da);
+});
+---
+
+<Base title="产品品鉴">
+  <div class="container-wide">
+    <PageHeader
+      kicker="TASTINGS"
+      title="产品品鉴"
+      subtitle="用品鉴框架深度拆解 AI 产品"
+      meta={[`${tastings.length} 篇品鉴`]}
+    />
+
+    {tastings.length === 0 ? (
+      <EmptyState title="产品品鉴 · 筹备中" description="尚无品鉴内容" />
+    ) : (
+      <div class="tasting-list">
+        {tastings.map(t => (
+          <a href={`/tastings/${t.id}/`} class="tasting-card">
+            <div class="card-top">
+              <span class="product-name">{t.data.product}</span>
+              <span class="company">{t.data.company}</span>
+            </div>
+            <p class="verdict-preview">{t.data.verdict}</p>
+            <div class="card-meta">
+              {t.data.analyzed && <span class="date">品鉴于 {t.data.analyzed}</span>}
+              <span class="chapters">{t.data.chapters.length} 章</span>
+            </div>
+            <div class="card-tags">
+              {(t.data.tags || []).map(tag => <Tag label={tag} />)}
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</Base>
+
+<style>
+  .tasting-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .tasting-card {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--sp-3);
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.1s;
+  }
+
+  .tasting-card:hover {
+    border-color: var(--ink);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-1);
+  }
+
+  .product-name {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    font-weight: 600;
+  }
+
+  .company {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+  }
+
+  .verdict-preview {
+    font-size: var(--fs-body);
+    color: var(--gray-700);
+    margin-bottom: var(--sp-2);
+    line-height: var(--lh-body);
+  }
+
+  .card-meta {
+    display: flex;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    margin-bottom: var(--sp-1);
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+  }
+</style>

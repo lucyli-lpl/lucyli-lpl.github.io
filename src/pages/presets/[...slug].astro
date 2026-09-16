@@ -1,0 +1,110 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import Tag from '../../components/Tag.astro';
+
+export async function getStaticPaths() {
+  const presets = await getCollection('presets');
+  return presets.map(entry => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { preset_name, chinese_name, output_type, origin, one_liner, tags, hasPreview, hasExample } = entry.data;
+---
+
+<Base title={`${preset_name} ${chinese_name}`}>
+  <div class="container-prose">
+    <Breadcrumb items={[
+      { label: '视觉库', href: '/presets/' },
+      { label: `${preset_name} ${chinese_name}` },
+    ]} />
+
+    <PageHeader
+      kicker={`PRESET · ${output_type}`}
+      title={`${preset_name} ${chinese_name}`}
+      subtitle={one_liner}
+      meta={[
+        origin ? `来源: ${origin}` : '',
+      ].filter(Boolean)}
+    />
+
+    <div class="preset-tags">
+      {tags.map(t => <Tag label={t} />)}
+    </div>
+
+    {hasPreview && (
+      <figure class="preview-figure">
+        <img
+          src={`/presets/${output_type}/${preset_name}/preview.png`}
+          alt={`${preset_name} preview`}
+          loading="lazy"
+        />
+        <figcaption>预览效果</figcaption>
+      </figure>
+    )}
+
+    {hasExample && (
+      <div class="example-link">
+        <a href={`/presets/${output_type}/${preset_name}/example.html`} target="_blank" rel="noopener">
+          查看完整示例 HTML →
+        </a>
+      </div>
+    )}
+
+    <article class="prose" data-pagefind-meta="collection:视觉库">
+      <Fragment set:html={entry.data.body} />
+    </article>
+  </div>
+</Base>
+
+<style>
+  .preset-tags {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-4);
+  }
+
+  .preview-figure {
+    margin-bottom: var(--sp-4);
+  }
+
+  .preview-figure img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .preview-figure figcaption {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    margin-top: var(--sp-1);
+    text-align: center;
+  }
+
+  .example-link {
+    margin-bottom: var(--sp-4);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .example-link a {
+    font-family: var(--font-mono);
+    font-size: var(--fs-body);
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .example-link a:hover {
+    text-decoration: underline;
+  }
+</style>

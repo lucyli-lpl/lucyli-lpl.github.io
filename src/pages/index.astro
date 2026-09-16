@@ -1,0 +1,256 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Tag from '../components/Tag.astro';
+import { collectUpdates } from '../lib/collect-updates';
+
+const modules = await getCollection('methodology');
+const patterns = await getCollection('patterns');
+const tastings = await getCollection('tastings');
+const skills = await getCollection('skills');
+const presets = await getCollection('presets');
+
+const sections = [
+  { label: '方法论模块', count: modules.length, href: '/methodology/' },
+  { label: 'pattern 追踪', count: patterns.length, href: '/patterns/' },
+  { label: '产品品鉴', count: tastings.length, href: '/tastings/' },
+  { label: 'Skill', count: skills.length, href: '/skills/' },
+  { label: '视觉预设', count: presets.length, href: '/presets/' },
+];
+
+const updates = await collectUpdates();
+const recentUpdates = updates.slice(0, 8);
+
+const kindLabel: Record<string, string> = {
+  new: '新增',
+  evolved: '演进',
+  changelog: '迭代',
+};
+
+const collectionLabel: Record<string, string> = {
+  patterns: 'pattern',
+  tastings: '品鉴',
+  methodology: '方法论',
+  notes: '笔记',
+};
+---
+
+<Base title="首页">
+  <div class="container-wide hero">
+    <p class="kicker">AI PM &middot; 方法论 / 观察 / 工具</p>
+    <h1>把 AI 的模糊能力，<br/>规定成清晰的产品承诺</h1>
+    <p class="subtitle">一线企业 AI PM 的实践方法论、产品观察与工具沉淀。从能力边界出发，穿透立项、测试、上线到运营的全流程。</p>
+    <div class="hero-actions">
+      <a href="/methodology/" class="btn-primary">读方法论</a>
+      <a href="/observations/" class="btn-secondary">看观察</a>
+    </div>
+  </div>
+
+  <div class="container-wide stats">
+    {sections.map(s => (
+      <a href={s.href} class="stat-card">
+        <span class="stat-count">{s.count}</span>
+        <span class="stat-label">{s.label}</span>
+      </a>
+    ))}
+  </div>
+
+  {recentUpdates.length > 0 && (
+    <div class="container-wide updates-section">
+      <h2 class="section-heading">最近更新</h2>
+      <div class="update-list">
+        {recentUpdates.map(u => (
+          <a href={u.href} class="update-row">
+            <span class="update-date">{u.date}</span>
+            <Tag label={kindLabel[u.kind] || u.kind} />
+            <span class="update-collection">{collectionLabel[u.collection] || u.collection}</span>
+            <span class="update-title">{u.title}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  )}
+</Base>
+
+<style>
+  .hero {
+    padding: var(--sp-8) 0 var(--sp-4);
+  }
+
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--sp-2);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: var(--sp-2);
+  }
+
+  .subtitle {
+    font-size: var(--fs-body);
+    color: var(--gray-700);
+    max-width: 560px;
+    line-height: var(--lh-body);
+    margin-bottom: var(--sp-4);
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--sp-2);
+  }
+
+  .btn-primary {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    font-weight: 500;
+    padding: 0.6em 1.4em;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: opacity 0.1s;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.85;
+  }
+
+  .btn-secondary {
+    display: inline-block;
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    font-weight: 500;
+    padding: 0.6em 1.4em;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: border-color 0.1s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--ink);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--sp-2);
+    padding-bottom: var(--sp-6);
+  }
+
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--sp-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.1s;
+  }
+
+  .stat-card:hover {
+    border-color: var(--ink);
+  }
+
+  .stat-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-h1);
+    font-weight: 700;
+  }
+
+  .stat-label {
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+  }
+
+  .updates-section {
+    padding-bottom: var(--sp-8);
+  }
+
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    font-weight: 700;
+    margin-bottom: var(--sp-3);
+    padding-bottom: var(--sp-1);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .update-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .update-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) 0;
+    border-bottom: 1px solid var(--gray-100);
+    text-decoration: none;
+    color: var(--ink);
+    transition: background 0.1s;
+  }
+
+  .update-row:hover {
+    background: var(--paper-2);
+  }
+
+  .update-row:last-child {
+    border-bottom: none;
+  }
+
+  .update-date {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    flex-shrink: 0;
+    min-width: 6em;
+  }
+
+  .update-collection {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+    flex-shrink: 0;
+  }
+
+  .update-title {
+    font-size: var(--fs-body);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    .stats {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .update-row {
+      flex-wrap: wrap;
+    }
+
+    .update-title {
+      flex-basis: 100%;
+      white-space: normal;
+    }
+  }
+</style>

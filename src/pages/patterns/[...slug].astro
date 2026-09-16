@@ -1,0 +1,144 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ChapterNav from '../../components/ChapterNav.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import Tag from '../../components/Tag.astro';
+import Timeline from '../../components/Timeline.astro';
+import { parseEvolutionLog } from '../../lib/evolution-log';
+import { collectBacklinks } from '../../lib/collect-updates';
+
+export async function getStaticPaths() {
+  const patterns = await getCollection('patterns');
+  return patterns.map(entry => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const { pattern_name, chinese_name, status, heat, first_seen, originated_by, tags, related_patterns } = entry.data;
+
+const heatDots = '●'.repeat(heat) + '○'.repeat(5 - heat);
+
+const { patternToCases } = await collectBacklinks();
+const linkedCases = patternToCases[entry.id] || [];
+
+const { nodes: timelineNodes } = parseEvolutionLog(entry.body || '');
+---
+
+<Base title={`${pattern_name} ${chinese_name}`}>
+  <div class="layout-sidebar">
+    <div class="main-content">
+      <Breadcrumb items={[
+        { label: 'Patterns', href: '/patterns/' },
+        { label: pattern_name },
+      ]} />
+
+      <PageHeader
+        kicker={`PATTERN · ${status.toUpperCase()}`}
+        title={`${pattern_name} ${chinese_name}`}
+        meta={[
+          `heat ${heatDots}`,
+          `首现 ${first_seen}`,
+          originated_by ? `发起 ${originated_by}` : '',
+        ].filter(Boolean)}
+      />
+
+      <div class="tags-row">
+        <StatusBadge status={status} />
+        {tags.map(t => <Tag label={t} />)}
+      </div>
+
+      <article class="prose" data-pagefind-meta={`collection:pattern 追踪`}>
+        <Content />
+      </article>
+
+      {timelineNodes.length > 0 && (
+        <section class="evolution-section">
+          <h2 id="evolution-log">Evolution Log</h2>
+          <Timeline nodes={timelineNodes} />
+        </section>
+      )}
+
+      {linkedCases.length > 0 && (
+        <section class="related">
+          <h3>Referenced In</h3>
+          <div class="related-list">
+            {linkedCases.map(c => (
+              <Tag label={c.title} href={`/${c.collection}/${c.slug}/`} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {related_patterns.length > 0 && (
+        <section class="related">
+          <h3>Related Patterns</h3>
+          <div class="related-list">
+            {related_patterns.map(rp => (
+              <Tag label={rp} href={`/patterns/${rp.toLowerCase()}/`} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+
+    <aside class="sidebar">
+      <ChapterNav headings={headings.filter(h => h.depth <= 3)} />
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .tags-row {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-4);
+  }
+
+  .evolution-section {
+    margin-top: var(--sp-6);
+  }
+
+  .evolution-section h2 {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    font-weight: 700;
+    margin-bottom: var(--sp-3);
+    padding-bottom: var(--sp-1);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .related {
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .related h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    margin-bottom: var(--sp-2);
+  }
+
+  .related-list {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+  }
+
+  .sidebar {
+    order: 1;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar {
+      order: -1;
+    }
+  }
+</style>

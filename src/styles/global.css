@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  loading: lazy;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container-prose {
+  max-width: var(--w-prose);
+  margin: 0 auto;
+  padding: 0 var(--sp-3);
+}
+
+.container-wide {
+  max-width: var(--w-wide);
+  margin: 0 auto;
+  padding: 0 var(--sp-3);
+}
+
+.layout-sidebar {
+  display: grid;
+  grid-template-columns: 1fr var(--w-side);
+  gap: var(--sp-6);
+  max-width: var(--w-wide);
+  margin: 0 auto;
+  padding: 0 var(--sp-3);
+}
+
+@media (max-width: 900px) {
+  .layout-sidebar {
+    grid-template-columns: 1fr;
+  }
+}
