@@ -92,12 +92,20 @@
   .search-dialog {
     position: relative;
     background: var(--paper);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
     width: 90%;
-    max-width: 600px;
+    max-width: 640px;
     max-height: 70vh;
     overflow-y: auto;
+    padding: var(--sp-3) var(--sp-4);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+
+  @media (max-width: 640px) {
+    .search-dialog {
+      padding: var(--sp-2);
+    }
   }
 </style>
 
@@ -112,5 +120,43 @@
     --pagefind-ui-border-width: 1px;
     --pagefind-ui-border-radius: 4px;
     --pagefind-ui-font: var(--font-body);
+  }
+
+  /* 让结果区更松一点，和站点其他卡片的节奏一致 */
+  .pagefind-ui__search-input {
+    font-family: var(--font-body);
+    font-weight: 400;
+  }
+
+  .pagefind-ui__message {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    padding: var(--sp-1) 0;
+  }
+
+  .pagefind-ui__result {
+    padding: var(--sp-2) 0;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .pagefind-ui__result-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  .pagefind-ui__result-excerpt {
+    line-height: var(--lh-body);
+    color: var(--gray-700);
+  }
+
+  .pagefind-ui__result-nested {
+    padding-left: var(--sp-2);
+    margin-top: var(--sp-1);
+  }
+
+  .pagefind-ui__result-tag {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
   }
 </style>
