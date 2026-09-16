@@ -5,6 +5,8 @@ import PageHeader from '../../components/PageHeader.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ChapterNav from '../../components/ChapterNav.astro';
 import Tag from '../../components/Tag.astro';
+import GrowthLog from '../../components/GrowthLog.astro';
+import { loadChangelog, entriesForModule } from '../../lib/changelog';
 
 export async function getStaticPaths() {
   const modules = await getCollection('methodology');
@@ -22,6 +24,7 @@ export async function getStaticPaths() {
 const { entry, prev, next } = Astro.props;
 const { order, title, one_liner, chapters, skills, since_version, hasDiagram, slug } = entry.data;
 const orderStr = String(order).padStart(2, '0');
+const growth = entriesForModule(loadChangelog(), order);
 
 const headings = chapters.map((ch, i) => ({
   slug: `ch-${String(i + 1).padStart(2, '0')}`,
@@ -91,6 +94,7 @@ const headings = chapters.map((ch, i) => ({
           </div>
         </div>
       )}
+      <GrowthLog entries={growth} />
     </aside>
   </div>
 </Base>

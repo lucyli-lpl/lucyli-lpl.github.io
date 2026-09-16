@@ -1,25 +1,11 @@
 ---
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import * as yaml from 'js-yaml';
 import Base from '../../../layouts/Base.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import Breadcrumb from '../../../components/Breadcrumb.astro';
+import { loadChangelog, TRIGGER_META } from '../../../lib/changelog';
 
-interface ChangelogEntry {
-  version: string;
-  date?: string;
-  summary: string;
-  modules: number[];
-  details: string;
-}
-
-const changelogPath = resolve(process.cwd(), '.content/ai-pm-fieldbook/methodology/CHANGELOG.yaml');
-let entries: ChangelogEntry[] = [];
-if (existsSync(changelogPath)) {
-  const raw = readFileSync(changelogPath, 'utf-8');
-  entries = (yaml.load(raw) as ChangelogEntry[]) || [];
-}
+// 页面按 新 → 旧 展示
+const entries = loadChangelog().reverse();
 ---
 
 <Base title="方法论迭代记录">
@@ -38,10 +24,14 @@ if (existsSync(changelogPath)) {
 
     <div class="changelog">
       {entries.map(entry => (
-        <article class="version-entry">
+        <article class="version-entry" id={`v${entry.version}`}>
           <div class="version-header">
             <span class="version-tag">v{entry.version}</span>
             {entry.date && <span class="version-date">{entry.date}</span>}
+            <span class={`version-trigger version-trigger--${entry.trigger}`} title="触发源">
+              {TRIGGER_META[entry.trigger].glyph} {TRIGGER_META[entry.trigger].label}
+              {entry.trigger_ref && <span class="version-trigger-ref">· {entry.trigger_ref}</span>}
+            </span>
             <span class="version-modules">
               模块 {entry.modules.join(', ')}
             </span>
@@ -69,6 +59,29 @@ if (existsSync(changelogPath)) {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: var(--sp-3);
+    scroll-margin-top: var(--sp-6);
+  }
+
+  .version-entry:target {
+    border-color: var(--ink);
+  }
+
+  .version-trigger {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    padding: 2px 8px;
+    border-radius: var(--radius);
+    background: var(--gray-100);
+    color: var(--gray-700);
+  }
+
+  .version-trigger--project    { background: var(--warm-light);   color: var(--warm); }
+  .version-trigger--reading    { background: var(--accent-light); color: var(--accent); }
+  .version-trigger--discussion { background: var(--green-light);  color: var(--green); }
+
+  .version-trigger-ref {
+    color: inherit;
+    opacity: 0.8;
   }
 
   .version-header {

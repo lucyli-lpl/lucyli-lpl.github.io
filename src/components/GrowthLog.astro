@@ -1,0 +1,113 @@
+---
+/**
+ * 模块页侧栏「成长记录」：列出改动过该模块的所有版本及其触发源。
+ */
+import { TRIGGER_META, type ChangelogEntry } from '../lib/changelog';
+
+interface Props {
+  entries: ChangelogEntry[];
+}
+
+const { entries } = Astro.props;
+// 新 → 旧展示
+const list = [...entries].reverse();
+---
+
+{list.length > 0 && (
+  <div class="growth">
+    <p class="sidebar-label">成长记录 · {list.length} 次修订</p>
+    <ol class="growth-list">
+      {list.map(e => {
+        const t = TRIGGER_META[e.trigger];
+        return (
+          <li class={`growth-item growth-item--${e.trigger}`}>
+            <a href={`/methodology/changelog/#v${e.version}`} class="growth-link">
+              <span class="growth-head">
+                <span class="growth-ver">v{e.version}</span>
+                <span class="growth-trigger" title={t.label}>{t.glyph} {t.label}</span>
+              </span>
+              <span class="growth-summary">{e.trigger_ref ?? e.summary}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+  </div>
+)}
+
+<style>
+  .growth {
+    margin-top: var(--sp-4);
+  }
+
+  .sidebar-label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--sp-1);
+  }
+
+  .growth-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 2px solid var(--gray-200);
+  }
+
+  .growth-item {
+    position: relative;
+    padding-left: var(--sp-2);
+    margin-bottom: var(--sp-2);
+  }
+
+  .growth-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gray-500);
+  }
+
+  .growth-item--project::before    { background: var(--warm); }
+  .growth-item--reading::before    { background: var(--accent); }
+  .growth-item--discussion::before { background: var(--green); }
+
+  .growth-link {
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .growth-link:hover .growth-summary {
+    text-decoration: underline;
+  }
+
+  .growth-head {
+    display: flex;
+    gap: var(--sp-1);
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+  }
+
+  .growth-ver {
+    font-weight: 600;
+  }
+
+  .growth-trigger {
+    color: var(--gray-500);
+  }
+
+  .growth-summary {
+    display: block;
+    font-size: var(--fs-meta);
+    color: var(--gray-700);
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+</style>

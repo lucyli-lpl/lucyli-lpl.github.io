@@ -4,15 +4,19 @@ import Base from '../../layouts/Base.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Verdict from '../../components/Verdict.astro';
 import CardModule from '../../components/CardModule.astro';
+import EvolutionMatrix from '../../components/EvolutionMatrix.astro';
+import { loadChangelog } from '../../lib/changelog';
 
 const allModules = await getCollection('methodology');
 const modules = allModules.sort((a, b) => a.data.order - b.data.order);
+const changelog = loadChangelog();
+const latest = changelog.at(-1)?.version ?? '2.1';
 ---
 
 <Base title="方法论">
   <div class="container-wide">
     <PageHeader
-      kicker="METHODOLOGY · v2.1"
+      kicker={`METHODOLOGY · v${latest}`}
       title="AI 应用能力边界方法论"
       subtitle="能力三区不是难度分级，而是三种产品承诺——核心区保证结果，边缘区保证处理，界外区保证边界"
       meta={[`${modules.length} 个模块`]}
@@ -33,8 +37,13 @@ const modules = allModules.sort((a, b) => a.data.order - b.data.order);
       ))}
     </div>
 
+    <EvolutionMatrix
+      modules={modules.map(m => ({ id: m.id, order: m.data.order, title: m.data.title }))}
+      entries={changelog}
+    />
+
     <a href="/methodology/changelog/" class="changelog-link">
-      <span class="cl-title">迭代记录 v1 → v2.1</span>
+      <span class="cl-title">迭代记录 v{changelog[0]?.version ?? '1'} → v{latest}</span>
       <span class="cl-meta">查看版本历史</span>
     </a>
   </div>
