@@ -1,0 +1,161 @@
+---
+/**
+ * Pattern 页头状态条：落地进度 stepper + 热度条 + 关键数字。
+ */
+type Status = 'concept' | 'landed' | 'evolving' | 'converging';
+
+interface Props {
+  status: Status;
+  heat: number;
+  firstSeen: string;
+  originatedBy?: string;
+  productCount: number;
+  eventCount: number;
+}
+
+const { status, heat, firstSeen, originatedBy, productCount, eventCount } = Astro.props;
+
+const steps: { key: Status; label: string; hint: string }[] = [
+  { key: 'concept',    label: '概念期', hint: '仅见于研究或演示' },
+  { key: 'landed',     label: '已落地', hint: '至少一个产品交付真实用户' },
+  { key: 'evolving',   label: '进化中', hint: '已上线且持续迭代' },
+  { key: 'converging', label: '趋同期', hint: '多产品趋同，模式稳定' },
+];
+const current = steps.findIndex(s => s.key === status);
+---
+
+<div class="psb">
+  <ol class="stepper" aria-label="落地进度">
+    {steps.map((s, i) => (
+      <li class:list={['step', { done: i < current, current: i === current }]} title={s.hint}>
+        <span class="step-dot" aria-hidden="true" />
+        <span class="step-label">{s.label}</span>
+      </li>
+    ))}
+  </ol>
+
+  <dl class="facts">
+    <div class="fact">
+      <dt>热度</dt>
+      <dd class="heat" aria-label={`${heat} / 5`}>
+        {[1, 2, 3, 4, 5].map(i => <span class:list={['heat-seg', { on: i <= heat }]} />)}
+        <span class="heat-num">{heat}/5</span>
+      </dd>
+    </div>
+    <div class="fact"><dt>首现</dt><dd class="mono">{firstSeen}</dd></div>
+    <div class="fact"><dt>产品实现</dt><dd class="mono">{productCount}</dd></div>
+    <div class="fact"><dt>演化事件</dt><dd class="mono">{eventCount}</dd></div>
+    {originatedBy && <div class="fact fact--wide"><dt>发起</dt><dd>{originatedBy}</dd></div>}
+  </dl>
+</div>
+
+<style>
+  .psb {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--sp-2) var(--sp-3);
+    margin-bottom: var(--sp-4);
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+
+  .stepper {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: relative;
+  }
+
+  .stepper::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 2px;
+    background: var(--gray-200);
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+  }
+
+  .step-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--gray-300);
+    box-sizing: border-box;
+  }
+
+  .step.done .step-dot { background: var(--ink); border-color: var(--ink); }
+  .step.done { color: var(--gray-700); }
+
+  .step.current .step-dot {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-light);
+  }
+  .step.current { color: var(--accent); font-weight: 600; }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1) var(--sp-4);
+    margin: 0;
+    padding-top: var(--sp-2);
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .fact {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-1);
+    font-size: var(--fs-meta);
+  }
+
+  .fact--wide { flex-basis: 100%; }
+
+  .fact dt {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+  }
+
+  .fact dd { margin: 0; color: var(--ink); }
+  .mono { font-family: var(--font-mono); }
+
+  .heat {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .heat-seg {
+    width: 14px;
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 2px;
+  }
+
+  .heat-seg.on { background: var(--warm); }
+
+  .heat-num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+    margin-left: 4px;
+  }
+</style>

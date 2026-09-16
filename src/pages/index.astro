@@ -9,9 +9,11 @@ const patterns = await getCollection('patterns');
 const tastings = await getCollection('tastings');
 const skills = await getCollection('skills');
 const presets = await getCollection('presets');
+const retros = await getCollection('retros');
 
 const sections = [
   { label: '方法论模块', count: modules.length, href: '/methodology/' },
+  { label: '项目复盘', count: retros.length, href: '/retros/' },
   { label: 'pattern 追踪', count: patterns.length, href: '/patterns/' },
   { label: '产品品鉴', count: tastings.length, href: '/tastings/' },
   { label: 'Skill', count: skills.length, href: '/skills/' },
@@ -31,6 +33,7 @@ const collectionLabel: Record<string, string> = {
   patterns: 'pattern',
   tastings: '品鉴',
   methodology: '方法论',
+  retros: '复盘',
   notes: '笔记',
 };
 ---

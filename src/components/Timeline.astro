@@ -15,7 +15,7 @@ const { nodes } = Astro.props;
 <div class="timeline">
   {nodes.map(node => (
     <div class="timeline-node">
-      <div class="timeline-dot" />
+      <div class={`timeline-dot timeline-dot--${node.driver ?? 'none'}`} />
       <div class="timeline-content">
         <div class="timeline-meta">
           <span class="timeline-date">{node.date}</span>
@@ -61,6 +61,12 @@ const { nodes } = Astro.props;
     border-radius: 50%;
     background: var(--ink);
   }
+
+  .timeline-dot--product-design { background: var(--accent); }
+  .timeline-dot--market         { background: var(--warm); }
+  .timeline-dot--academic       { background: var(--green); }
+  .timeline-dot--ux             { background: var(--gray-500); }
+  .timeline-dot--none           { background: var(--gray-300); }
 
   .timeline-meta {
     display: flex;

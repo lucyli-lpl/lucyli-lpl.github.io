@@ -1,0 +1,85 @@
+---
+/**
+ * 运作机制：输入 → 处理 → 沉淀物 → 执行 → 反馈闭环，横向五节点流程。
+ */
+import type { MechanismStep } from '../lib/pattern-parser';
+
+interface Props { steps: MechanismStep[] }
+const { steps } = Astro.props;
+---
+
+<ol class="flow" style={`--n:${steps.length}`}>
+  {steps.map((s, i) => (
+    <li class={`node node--${s.key}`}>
+      <span class="node-idx" aria-hidden="true">{i + 1}</span>
+      <span class="node-label">{s.label}</span>
+      <p class="node-text">{s.text}</p>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .flow {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--sp-4);
+    display: grid;
+    grid-template-columns: repeat(var(--n), 1fr);
+    gap: var(--sp-2);
+  }
+
+  .node {
+    position: relative;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--ink);
+    border-radius: var(--radius);
+    padding: var(--sp-2);
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* 节点间箭头 */
+  .node + .node::before {
+    content: '→';
+    position: absolute;
+    left: calc(-1 * var(--sp-2) / 2 - 0.35em);
+    top: 10px;
+    color: var(--gray-300);
+    font-size: 0.9rem;
+  }
+
+  .node--input      { border-top-color: var(--gray-500); }
+  .node--processing { border-top-color: var(--accent); }
+  .node--artifact   { border-top-color: var(--warm); }
+  .node--execution  { border-top-color: var(--ink); }
+  .node--feedback   { border-top-color: var(--green); }
+
+  .node-idx {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+  }
+
+  .node-label {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--fs-h3);
+  }
+
+  .node-text {
+    font-size: var(--fs-meta);
+    line-height: 1.6;
+    color: var(--gray-700);
+  }
+
+  @media (max-width: 900px) {
+    .flow { grid-template-columns: 1fr; }
+    .node + .node::before {
+      content: '↓';
+      left: var(--sp-2);
+      top: calc(-1 * var(--sp-2) / 2 - 0.6em);
+    }
+  }
+</style>

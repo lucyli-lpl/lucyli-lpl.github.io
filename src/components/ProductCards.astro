@@ -1,0 +1,182 @@
+---
+/**
+ * 产品实现：对比矩阵转成产品卡片网格，详情卡折叠在卡片内。
+ */
+import type { Product } from '../lib/pattern-parser';
+import { DETAIL_LABELS } from '../lib/pattern-parser';
+
+interface Props { products: Product[] }
+const { products } = Astro.props;
+
+const detailOrder = ['implementation', 'design', 'constraints', 'scenario', 'platform', 'link', 'visual'];
+const isUrl = (s: string) => /^https?:\/\//.test(s);
+---
+
+<div class="cards" style={`--n:${Math.min(products.length, 3)}`}>
+  {products.map(p => {
+    const detailKeys = detailOrder.filter(k => p.detail[k]);
+    return (
+      <article class="card">
+        <header class="card-head">
+          <h3 class="card-name">{p.name}</h3>
+          {p.matrix.vendor && <span class="card-vendor">{p.matrix.vendor}</span>}
+        </header>
+
+        <dl class="card-facts">
+          {p.matrix.launch && <><dt>上线</dt><dd class="mono">{p.matrix.launch}</dd></>}
+          {p.matrix.platform && <><dt>平台</dt><dd>{p.matrix.platform}</dd></>}
+          {p.matrix.scenario && <><dt>场景</dt><dd>{p.matrix.scenario}</dd></>}
+          {p.matrix.approach && <><dt>实现</dt><dd>{p.matrix.approach}</dd></>}
+          {p.extra.map(e => <><dt>{e.label}</dt><dd>{e.value}</dd></>)}
+        </dl>
+
+        {p.matrix.tradeoff && (
+          <p class="card-tradeoff"><span class="tradeoff-label">取舍</span>{p.matrix.tradeoff}</p>
+        )}
+
+        {p.matrix.url && (
+          <p class="card-url">
+            {isUrl(p.matrix.url)
+              ? <a href={p.matrix.url} target="_blank" rel="noopener">{p.matrix.url.replace(/^https?:\/\//, '')}</a>
+              : <span>{p.matrix.url}</span>}
+          </p>
+        )}
+
+        {detailKeys.length > 0 && (
+          <details class="card-detail">
+            <summary>详情卡</summary>
+            <dl class="detail-list">
+              {detailKeys.map(k => (
+                <>
+                  <dt>{DETAIL_LABELS[k]}</dt>
+                  <dd set:html={p.detail[k]} />
+                </>
+              ))}
+            </dl>
+          </details>
+        )}
+      </article>
+    );
+  })}
+</div>
+
+<style>
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(var(--n), 1fr);
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-4);
+  }
+
+  .card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    min-width: 0;
+  }
+
+  .card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-bottom: var(--sp-1);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .card-name {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .card-vendor {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+  }
+
+  .card-facts {
+    display: grid;
+    grid-template-columns: 3em 1fr;
+    gap: 4px var(--sp-1);
+    margin: 0;
+    font-size: var(--fs-meta);
+    line-height: 1.5;
+  }
+
+  .card-facts dt {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+    padding-top: 2px;
+  }
+
+  .card-facts dd { margin: 0; color: var(--gray-700); overflow-wrap: anywhere; }
+  .mono { font-family: var(--font-mono); }
+
+  .card-tradeoff {
+    font-size: var(--fs-meta);
+    line-height: 1.5;
+    padding: var(--sp-1) var(--sp-2);
+    background: var(--paper-2);
+    border-left: 2px solid var(--warm);
+    border-radius: var(--radius);
+  }
+
+  .tradeoff-label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--warm);
+    margin-right: 0.5em;
+  }
+
+  .card-url {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    overflow-wrap: anywhere;
+  }
+
+  .card-url a { color: var(--accent); text-decoration: none; }
+  .card-url a:hover { text-decoration: underline; }
+
+  .card-detail {
+    margin-top: auto;
+    border-top: 1px solid var(--gray-200);
+    padding-top: var(--sp-1);
+  }
+
+  .card-detail summary {
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+  }
+
+  .card-detail summary:hover { color: var(--ink); }
+
+  .detail-list {
+    margin: var(--sp-1) 0 0;
+    font-size: var(--fs-meta);
+    line-height: 1.6;
+  }
+
+  .detail-list dt {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+    margin-top: var(--sp-1);
+  }
+
+  .detail-list dd { margin: 0; color: var(--gray-700); }
+  .detail-list dd :global(ul) { padding-left: 1.2em; margin: 0.25em 0; }
+  .detail-list dd :global(a) { color: var(--accent); overflow-wrap: anywhere; }
+
+  @media (max-width: 900px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>

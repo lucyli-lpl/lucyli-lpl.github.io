@@ -3,9 +3,23 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import ListRow from '../../components/ListRow.astro';
+import EvolutionStrip from '../../components/EvolutionStrip.astro';
+import { parseEvolutionLog } from '../../lib/evolution-log';
+import type { StripRow } from '../../lib/drivers';
 
 const allPatterns = await getCollection('patterns');
 const patterns = allPatterns.sort((a, b) => b.data.heat - a.data.heat);
+
+// 行业演化全景：每个 pattern 一条泳道，事件来自各自的 Evolution Log
+const panoramaRows: StripRow[] = patterns
+  .map(p => ({
+    label: `${p.data.chinese_name}`,
+    sub: p.data.pattern_name,
+    href: `/patterns/${p.id}/`,
+    events: parseEvolutionLog(p.body || '').nodes,
+  }))
+  .filter(r => r.events.length > 0);
+const eventTotal = panoramaRows.reduce((n, r) => n + r.events.length, 0);
 ---
 
 <Base title="Pattern 追踪">
@@ -16,6 +30,14 @@ const patterns = allPatterns.sort((a, b) => b.data.heat - a.data.heat);
       subtitle="追踪 AI 产品设计模式的演化，从概念到落地"
       meta={[`${patterns.length} 个 pattern`]}
     />
+
+    {panoramaRows.length > 0 && (
+      <section class="panorama">
+        <h2 class="panorama-title">行业演化全景 <span class="panorama-count">{eventTotal} 个事件</span></h2>
+        <p class="panorama-sub">所有 pattern 的演化事件铺在同一条时间轴上。悬停查看事件，点击左侧进入 pattern。</p>
+        <EvolutionStrip rows={panoramaRows} />
+      </section>
+    )}
 
     <div class="filter-bar">
       <button class="filter-btn active" data-status="all">全部</button>
@@ -44,6 +66,30 @@ const patterns = allPatterns.sort((a, b) => b.data.heat - a.data.heat);
 </Base>
 
 <style>
+  .panorama { margin-bottom: var(--sp-4); }
+
+  .panorama-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-1);
+    margin-bottom: var(--sp-1);
+  }
+
+  .panorama-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    font-weight: 400;
+    color: var(--gray-500);
+  }
+
+  .panorama-sub {
+    font-size: var(--fs-meta);
+    color: var(--gray-700);
+    margin-bottom: var(--sp-2);
+  }
+
   .filter-bar {
     display: flex;
     gap: 0.5em;

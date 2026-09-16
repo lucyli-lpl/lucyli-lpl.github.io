@@ -7,8 +7,14 @@ import ChapterNav from '../../components/ChapterNav.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import Tag from '../../components/Tag.astro';
 import Timeline from '../../components/Timeline.astro';
+import PatternStatusBar from '../../components/PatternStatusBar.astro';
+import MechanismFlow from '../../components/MechanismFlow.astro';
+import ProductCards from '../../components/ProductCards.astro';
+import EvolutionStrip from '../../components/EvolutionStrip.astro';
 import { parseEvolutionLog } from '../../lib/evolution-log';
+import { parsePattern } from '../../lib/pattern-parser';
 import { collectBacklinks } from '../../lib/collect-updates';
+import { DRIVER_META, type StripRow } from '../../lib/drivers';
 
 export async function getStaticPaths() {
   const patterns = await getCollection('patterns');
@@ -19,15 +25,35 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content, headings } = await render(entry);
+const { Content, headings: mdHeadings } = await render(entry);
 const { pattern_name, chinese_name, status, heat, first_seen, originated_by, tags, related_patterns } = entry.data;
-
-const heatDots = '●'.repeat(heat) + '○'.repeat(5 - heat);
 
 const { patternToCases } = await collectBacklinks();
 const linkedCases = patternToCases[entry.id] || [];
 
-const { nodes: timelineNodes } = parseEvolutionLog(entry.body || '');
+const body = entry.body || '';
+const { nodes: timelineNodes } = parseEvolutionLog(body);
+const doc = parsePattern(body);
+
+// driver 泳道：只列出出现过的 driver
+const driverRows: StripRow[] = Object.keys(DRIVER_META)
+  .map(d => ({
+    label: DRIVER_META[d].label,
+    sub: d,
+    events: timelineNodes.filter(n => n.driver === d),
+  }))
+  .filter(r => r.events.length > 0);
+const untyped = timelineNodes.filter(n => !n.driver);
+if (untyped.length) driverRows.push({ label: '未标注', events: untyped });
+
+const headings = doc.parsed
+  ? [
+      doc.mechanism.length ? { slug: 'definition', text: '定义与机制', depth: 2 } : null,
+      doc.products.length ? { slug: 'implementations', text: '产品实现', depth: 2 } : null,
+      timelineNodes.length ? { slug: 'evolution-log', text: '演化日志', depth: 2 } : null,
+      doc.pmNotesHtml ? { slug: 'pm-notes', text: 'PM 笔记', depth: 2 } : null,
+    ].filter((h): h is { slug: string; text: string; depth: number } => h !== null)
+  : mdHeadings.filter(h => h.depth <= 3);
 ---
 
 <Base title={`${pattern_name} ${chinese_name}`}>
@@ -41,11 +67,7 @@ const { nodes: timelineNodes } = parseEvolutionLog(entry.body || '');
       <PageHeader
         kicker={`PATTERN · ${status.toUpperCase()}`}
         title={`${pattern_name} ${chinese_name}`}
-        meta={[
-          `heat ${heatDots}`,
-          `首现 ${first_seen}`,
-          originated_by ? `发起 ${originated_by}` : '',
-        ].filter(Boolean)}
+        subtitle={doc.oneLiner.zh}
       />
 
       <div class="tags-row">
@@ -53,20 +75,91 @@ const { nodes: timelineNodes } = parseEvolutionLog(entry.body || '');
         {tags.map(t => <Tag label={t} />)}
       </div>
 
-      <article class="prose" data-pagefind-meta={`collection:pattern 追踪`}>
-        <Content />
-      </article>
+      <PatternStatusBar
+        status={status}
+        heat={heat}
+        firstSeen={first_seen}
+        originatedBy={originated_by}
+        productCount={doc.products.length}
+        eventCount={timelineNodes.length}
+      />
 
-      {timelineNodes.length > 0 && (
-        <section class="evolution-section">
-          <h2 id="evolution-log">Evolution Log</h2>
-          <Timeline nodes={timelineNodes} />
-        </section>
+      {doc.parsed ? (
+        <div data-pagefind-meta="collection:pattern 追踪">
+          {doc.oneLiner.en && <p class="one-liner-en">{doc.oneLiner.en}</p>}
+
+          {doc.mechanism.length > 0 && (
+            <section class="block">
+              <h2 id="definition">定义与机制</h2>
+              <MechanismFlow steps={doc.mechanism} />
+            </section>
+          )}
+
+          {(doc.prerequisites.length > 0 || doc.boundaries.length > 0) && (
+            <div class="two-col">
+              {doc.prerequisites.length > 0 && (
+                <section class="mini">
+                  <h3>前置依赖</h3>
+                  <ol class="prereq">
+                    {doc.prerequisites.map(p => <li>{p}</li>)}
+                  </ol>
+                </section>
+              )}
+              {doc.boundaries.length > 0 && (
+                <section class="mini">
+                  <h3>已知能力边界</h3>
+                  <ul class="bounds">
+                    {doc.boundaries.map(b => (
+                      <li>
+                        {b.title && <strong>{b.title}</strong>}
+                        <span>{b.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </div>
+          )}
+
+          {doc.products.length > 0 && (
+            <section class="block">
+              <h2 id="implementations">产品实现 <span class="h-count">{doc.products.length}</span></h2>
+              <ProductCards products={doc.products} />
+            </section>
+          )}
+
+          {timelineNodes.length > 0 && (
+            <section class="block">
+              <h2 id="evolution-log">演化日志 <span class="h-count">{timelineNodes.length}</span></h2>
+              <EvolutionStrip rows={driverRows} title="按驱动力分泳道" />
+              <Timeline nodes={timelineNodes} />
+            </section>
+          )}
+
+          {doc.pmNotesHtml && (
+            <section class="block">
+              <h2 id="pm-notes">PM 笔记</h2>
+              <article class="prose"><Fragment set:html={doc.pmNotesHtml} /></article>
+            </section>
+          )}
+        </div>
+      ) : (
+        <>
+          <article class="prose" data-pagefind-meta="collection:pattern 追踪">
+            <Content />
+          </article>
+          {timelineNodes.length > 0 && (
+            <section class="block">
+              <h2 id="evolution-log">演化日志</h2>
+              <Timeline nodes={timelineNodes} />
+            </section>
+          )}
+        </>
       )}
 
       {linkedCases.length > 0 && (
         <section class="related">
-          <h3>Referenced In</h3>
+          <h3>被引用于</h3>
           <div class="related-list">
             {linkedCases.map(c => (
               <Tag label={c.title} href={`/${c.collection}/${c.slug}/`} />
@@ -77,7 +170,7 @@ const { nodes: timelineNodes } = parseEvolutionLog(entry.body || '');
 
       {related_patterns.length > 0 && (
         <section class="related">
-          <h3>Related Patterns</h3>
+          <h3>关联 pattern</h3>
           <div class="related-list">
             {related_patterns.map(rp => (
               <Tag label={rp} href={`/patterns/${rp.toLowerCase()}/`} />
@@ -88,7 +181,7 @@ const { nodes: timelineNodes } = parseEvolutionLog(entry.body || '');
     </div>
 
     <aside class="sidebar">
-      <ChapterNav headings={headings.filter(h => h.depth <= 3)} />
+      <ChapterNav headings={headings} />
     </aside>
   </div>
 </Base>
@@ -98,20 +191,87 @@ const { nodes: timelineNodes } = parseEvolutionLog(entry.body || '');
     display: flex;
     gap: 0.5em;
     flex-wrap: wrap;
+    margin-bottom: var(--sp-3);
+  }
+
+  .one-liner-en {
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    font-style: italic;
+    line-height: var(--lh-body);
     margin-bottom: var(--sp-4);
   }
 
-  .evolution-section {
-    margin-top: var(--sp-6);
-  }
+  .block { margin-top: var(--sp-6); }
 
-  .evolution-section h2 {
+  .block h2 {
     font-family: var(--font-display);
     font-size: var(--fs-h2);
     font-weight: 700;
     margin-bottom: var(--sp-3);
     padding-bottom: var(--sp-1);
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-1);
+  }
+
+  .h-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    font-weight: 400;
+    color: var(--gray-500);
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-2);
+  }
+
+  .mini h3 {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: var(--sp-1);
+  }
+
+  .prereq {
+    padding-left: 1.4em;
+    margin: 0;
+    font-size: var(--fs-meta);
+    line-height: 1.6;
+    color: var(--gray-700);
+  }
+
+  .prereq li { margin-bottom: 0.4em; }
+
+  .bounds {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bounds li {
+    font-size: var(--fs-meta);
+    line-height: 1.6;
+    color: var(--gray-700);
+    padding: 6px var(--sp-2);
+    background: var(--warm-light);
+    border-left: 2px solid var(--warm);
+    border-radius: var(--radius);
+  }
+
+  .bounds strong {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
   }
 
   .related {
@@ -132,13 +292,10 @@ const { nodes: timelineNodes } = parseEvolutionLog(entry.body || '');
     flex-wrap: wrap;
   }
 
-  .sidebar {
-    order: 1;
-  }
+  .sidebar { order: 1; }
 
   @media (max-width: 900px) {
-    .sidebar {
-      order: -1;
-    }
+    .sidebar { order: -1; }
+    .two-col { grid-template-columns: 1fr; }
   }
 </style>

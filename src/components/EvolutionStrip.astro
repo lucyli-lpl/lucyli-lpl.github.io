@@ -1,0 +1,223 @@
+---
+/**
+ * 泳道时间轴：每行一条泳道，事件按日期落在横轴上，按 driver 着色。
+ * 单个 pattern 页用 driver 作泳道；/patterns/ 首页用 pattern 作泳道（行业全景）。
+ * 纯 HTML/CSS。
+ */
+import { DRIVER_META, type StripRow } from '../lib/drivers';
+
+interface Props { rows: StripRow[]; title?: string }
+const { rows, title } = Astro.props;
+
+const toTime = (d: string) => {
+  const [y, m = '01', day = '15'] = d.split('-');
+  return Date.UTC(Number(y), Number(m) - 1, Number(day));
+};
+
+const all = rows.flatMap(r => r.events);
+const times = all.map(e => toTime(e.date));
+let min = Math.min(...times);
+let max = Math.max(...times);
+if (!isFinite(min)) { min = 0; max = 1; }
+if (max === min) { min -= 1000 * 60 * 60 * 24 * 90; max += 1000 * 60 * 60 * 24 * 90; }
+// 两端留 4% 边距
+const span = max - min;
+const pct = (t: number) => 4 + ((t - min) / span) * 92;
+
+// 年份刻度
+const y0 = new Date(min).getUTCFullYear();
+const y1 = new Date(max).getUTCFullYear();
+const ticks: { label: string; x: number }[] = [];
+for (let y = y0; y <= y1 + 1; y++) {
+  const t = Date.UTC(y, 0, 1);
+  if (t >= min && t <= max) ticks.push({ label: String(y), x: pct(t) });
+}
+if (ticks.length === 0) ticks.push({ label: String(y0), x: 4 });
+---
+
+{all.length > 0 && (
+<figure class="strip">
+  {title && <figcaption class="strip-title">{title}</figcaption>}
+  <div class="strip-scroll">
+    <div class="strip-grid">
+      <div class="axis">
+        <span class="axis-label" />
+        <div class="axis-track">
+          {ticks.map(t => <span class="tick" style={`left:${t.x}%`}>{t.label}</span>)}
+        </div>
+      </div>
+      {rows.map(r => (
+        <div class="lane">
+          {r.href
+            ? <a href={r.href} class="lane-label"><span class="lane-name">{r.label}</span>{r.sub && <span class="lane-sub">{r.sub}</span>}</a>
+            : <span class="lane-label"><span class="lane-name">{r.label}</span>{r.sub && <span class="lane-sub">{r.sub}</span>}</span>}
+          <div class="lane-track">
+            {ticks.map(t => <span class="gridline" style={`left:${t.x}%`} aria-hidden="true" />)}
+            {r.events.map(e => (
+              <span
+                class={`ev ev--${e.driver ?? 'none'}`}
+                style={`left:${pct(toTime(e.date))}%`}
+                title={`${e.date}${e.driver ? ` · ${DRIVER_META[e.driver]?.label ?? e.driver}` : ''}\n${e.text}`}
+                tabindex="0"
+                role="img"
+                aria-label={`${e.date} ${e.text}`}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+  <ul class="legend" aria-label="驱动力图例">
+    {Object.entries(DRIVER_META).map(([k, v]) => (
+      <li><span class={`ev ev--${k} ev--legend`} aria-hidden="true" />{v.label}</li>
+    ))}
+  </ul>
+</figure>
+)}
+
+<style>
+  .strip { margin: 0 0 var(--sp-4); }
+
+  .strip-title {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--gray-500);
+    letter-spacing: 0.08em;
+    margin-bottom: var(--sp-1);
+  }
+
+  .strip-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--paper);
+  }
+
+  .strip-grid {
+    min-width: 640px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .axis, .lane {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+  }
+
+  .axis {
+    border-bottom: 1px solid var(--border);
+    background: var(--paper-2);
+    height: 28px;
+  }
+
+  .axis-track, .lane-track {
+    position: relative;
+    height: 100%;
+  }
+
+  .tick {
+    position: absolute;
+    top: 6px;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+  }
+
+  .lane {
+    height: 40px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .lane:last-child { border-bottom: none; }
+
+  .lane-label {
+    padding: 0 var(--sp-2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1px;
+    text-decoration: none;
+    color: var(--ink);
+    border-right: 1px solid var(--border);
+    height: 100%;
+    min-width: 0;
+  }
+
+  a.lane-label:hover .lane-name { text-decoration: underline; }
+
+  .lane-name {
+    font-size: var(--fs-meta);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lane-sub {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gridline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--gray-100);
+  }
+
+  .ev {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--gray-300);
+    cursor: default;
+  }
+
+  .ev:hover, .ev:focus {
+    transform: translate(-50%, -50%) scale(1.4);
+    z-index: 2;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ink);
+  }
+
+  .ev--product-design { background: var(--accent); }
+  .ev--tech           { background: var(--ink); }
+  .ev--market         { background: var(--warm); }
+  .ev--academic       { background: var(--green); }
+  .ev--ux             { background: var(--gray-500); }
+  .ev--none           { background: var(--gray-300); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    list-style: none;
+    padding: 0;
+    margin: var(--sp-1) 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--gray-700);
+  }
+
+  .legend li { display: flex; align-items: center; gap: 6px; }
+
+  .ev--legend {
+    position: static;
+    transform: none;
+    width: 10px;
+    height: 10px;
+    border: none;
+    box-shadow: none;
+  }
+</style>
