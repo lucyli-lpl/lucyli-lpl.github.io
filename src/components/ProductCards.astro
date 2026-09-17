@@ -103,7 +103,7 @@ const isUrl = (s: string) => /^https?:\/\//.test(s);
   .card-facts {
     display: grid;
     /* 标签列按最长标签自适应（如 "OSWorld score"），上限 7em 后换行 */
-    grid-template-columns: minmax(3em, min(max-content, 7em)) 1fr;
+    grid-template-columns: minmax(3em, max-content) 1fr;
     gap: 4px var(--sp-2);
     margin: 0;
     font-size: var(--fs-meta);
@@ -115,6 +115,7 @@ const isUrl = (s: string) => /^https?:\/\//.test(s);
     font-size: var(--fs-tag);
     color: var(--gray-500);
     padding-top: 2px;
+    max-width: 7em;
     overflow-wrap: anywhere;
   }
 
