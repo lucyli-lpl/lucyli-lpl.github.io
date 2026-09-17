@@ -14,6 +14,7 @@ export function moduleLoader(base: string): Loader {
   return {
     name: 'module-loader',
     async load({ store, logger }) {
+      store.clear(); // 持久化 store：清掉上次的条目，删除的内容才会消失
       if (!existsSync(base)) {
         logger.warn(`Module loader: base directory not found: ${base}`);
         return;

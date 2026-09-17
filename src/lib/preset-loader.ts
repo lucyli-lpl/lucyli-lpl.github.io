@@ -8,6 +8,7 @@ export function presetLoader(base: string): Loader {
   return {
     name: 'preset-loader',
     async load({ store, logger }) {
+      store.clear(); // 持久化 store：清掉上次的条目，删除的内容才会消失
       if (!existsSync(base)) {
         logger.warn(`Preset loader: base directory not found: ${base}`);
         return;

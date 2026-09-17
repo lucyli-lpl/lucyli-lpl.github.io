@@ -8,6 +8,7 @@ export function skillLoader(bases: string[]): Loader {
   return {
     name: 'skill-loader',
     async load({ store, logger }) {
+      store.clear(); // 持久化 store：清掉上次的条目，删除的内容才会消失
       for (const base of bases) {
         if (!existsSync(base)) continue;
 
