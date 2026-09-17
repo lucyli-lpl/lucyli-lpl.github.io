@@ -47,10 +47,10 @@ export const featuredEntries = [
     href: '/patterns/teach-by-demonstration/',
   },
   {
-    kicker: '方法论 · 迭代记录',
-    title: 'v2.1：补齐 prompt 分层、架构判断、生产护栏',
-    summary: '从 v1 到 v2.1 的十二次修订，每一次都有触发源。',
-    href: '/methodology/changelog/',
+    kicker: '项目复盘',
+    title: '慎用反例与兜底',
+    summary: '两个企业 agent 项目的同一个教训：反例不是在收紧边界，是在挤掉中间地带。三条坑，对应模块 05。',
+    href: '/retros/2026-09-negative-examples/',
   },
 ] as const;
 
