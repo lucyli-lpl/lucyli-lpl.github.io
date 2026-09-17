@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500&display=swap');
 
 *, *::before, *::after {
   margin: 0;
@@ -7,21 +7,46 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
   font-family: var(--font-body);
   font-size: var(--fs-body);
   line-height: var(--lh-body);
-  color: var(--ink);
-  background: var(--paper);
+  color: var(--text);
+  background-color: var(--paper);
+  background-image: url('/img/paper-texture.webp');
+  background-size: 560px 560px;
+  background-blend-mode: multiply;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-img {
-  loading: lazy;
+main {
+  flex: 1;
+}
+
+h1, h2, h3, h4 {
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 a {
@@ -29,6 +54,17 @@ a {
   text-decoration: none;
 }
 
+button {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: var(--blue-wash);
+  color: var(--ink);
+}
+
+/* ---------- Containers ---------- */
 .container-prose {
   max-width: var(--w-prose);
   margin: 0 auto;
@@ -41,9 +77,15 @@ a {
   padding: 0 var(--sp-3);
 }
 
+.container-hero {
+  max-width: var(--w-hero);
+  margin: 0 auto;
+  padding: 0 var(--sp-3);
+}
+
 .layout-sidebar {
   display: grid;
-  grid-template-columns: 1fr var(--w-side);
+  grid-template-columns: minmax(0, 1fr) var(--w-side);
   gap: var(--sp-6);
   max-width: var(--w-wide);
   margin: 0 auto;
@@ -53,5 +95,33 @@ a {
 @media (max-width: 900px) {
   .layout-sidebar {
     grid-template-columns: 1fr;
+    gap: var(--sp-4);
   }
+}
+
+@media (max-width: 767px) {
+  .container-prose,
+  .container-wide,
+  .container-hero,
+  .layout-sidebar {
+    padding: 0 var(--sp-2);
+  }
+}
+
+/* ---------- Utilities ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-3);
 }

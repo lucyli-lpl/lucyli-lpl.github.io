@@ -1,227 +1,502 @@
-# PRD — lucyli-lpl 个人站点
+# PRD — lucyli-lpl 个人知识与项目网站 v2
 
-版本 v1.0 · 2026-09-05 · 作者：品璐（lucyli-lpl）
-配套文档：`design.md`（界面与视觉）、`tech.md`（架构、内容契约、实施）
-三份文档通过 **collection 名** 和 **组件名** 相互对齐；执行 AI 只拿到其中一份也应能完成对应部分的工作。
+版本：v2.0 Design Direction · 2026-09-17  
+状态：Design Approved / Ready for Implementation Planning  
+配套：`design.md`（视觉与交互规范）、`tech.md`（现有技术架构）
+
+> 核心定位：**编辑部 / 研究档案室式的可探索知识空间**。  
+> 不是个人简历，不是 SaaS 宣传页，也不是普通卡片式博客。
+>
+> 最高优先级视觉母版：`docs/design/final-visual-overview.png`。其他页面必须继承首页的材质、层叠、非对称编排与探索感。
+> 本 PRD 不再引用任何旧版/被否决视觉稿；实现时只允许使用上述 Final Visual Overview 作为图片级视觉参考。
 
 ---
 
-## 0. 一句话
+## 0. 本轮设计结论
 
-一个由多个 GitHub 内容仓库驱动的静态站点，把作者散落在各处的 AI PM 方法论、观察分析（pattern 追踪 / 产品品鉴 / 公司拆解）、Claude skill 和视觉模板库汇总成一个**可浏览、可分享、可持续更新**的知识工作台。
+### 0.1 设计目标
 
-## 1. 背景与目标
+1. 强化“方法论 + 学习 + 实践沉淀”的网站属性，弱化个人介绍。
+2. 首页降低信息密度，只承担：**定调 → 导航 → 当前关注 + 精选 → 收束**。
+3. 从“平铺页面”转向“渐进披露”：折叠、抽屉、横向滚动、sticky、scroll-snap、章节切换。
+4. 保留可读性：交互用于组织信息，不用于制造炫技负担。
+5. 让所有页面看起来属于同一套“研究档案系统”，而不是独立模板集合。
 
-### 1.1 现状
-内容资产分布在四处：
-- GitHub 仓库 `ai-design-patterns`（pattern 库 + pattern-tracker skill + visual-library skill）
-- GitHub 仓库 `ai-business-anatomy`（ai-product-tasting / ipo-archaeology / auto-analysis 三个 skill，以及一篇 Claude Tag 品鉴案例）
-- GitHub 仓库 `ai-pm-fieldbook`（AI 应用能力边界方法论 v2.1，单文件约 1000 行，含 v1→v2.1 迭代记录）
-- 本地 / Claude 环境（未发布的品鉴 markdown、零散笔记）
+### 0.2 视觉基调
 
-它们各自能用，但没有一个入口能看到全貌，也没有一个地方能让作者"再看一遍自己的体系"。
+- 暖白纸张：知识厚度、阅读温度。
+- 深墨蓝 / 灰蓝：理性、方法、主信息。
+- 银灰 / 毛玻璃：编辑部、文件夹、资料袋、索引卡的现代化转译。
+- 少量 muted gold：章节编号、当前状态、重要标记。
+- 避免：纯蓝银冷科技、SaaS 渐变、大面积深色、霓虹、平均分布卡片墙。
 
-### 1.2 目标（按优先级）
-1. **作者自用**：一个随时可以打开的"我的体系"视图——方法论分模块可导航、可看到演进；观察类内容可回溯；skill 和视觉模板一目了然。
-2. **可分享**：任何一个页面都可以直接丢给同行 / 面试官，对方不需要上下文就能看懂这是什么、能拿走什么。
-3. **可持续**：作者在原内容仓库 push 一次 markdown，站点自动更新；新增一个内容类别不需要改布局代码。
+### 0.3 内容文案已确认
 
-### 1.3 成功标准
-- 作者每周至少打开一次自己的站点用于回看或找东西（自用是第一目标）
-- 新增一篇 pattern / 品鉴 / 笔记，从 push 到上线 ≤ 10 分钟，无需人工干预
-- 新增一个 collection（例如"公司拆解"从 0 到有第一篇）只需：加一份配置 + 内容仓库里加一个目录
-- 全站任何页面在 375px 手机宽度下可读，无横向滚动（表格除外）
+- 首页主标题：**让学习和实践沉淀为方法，构建更清晰的思考体系。**
+- 导航：**工具箱 → 技能箱**。
+- 精选思考标题：**慢，就是快**。
 
-## 2. 读者与使用场景
+## 0.4 Implementation interaction levels
 
-| 读者 | 优先级 | 典型场景 | 对站点的要求 |
-|---|---|---|---|
-| 作者本人 | P0 | 写新内容前回看方法论某模块；给 pattern 加演化记录后确认展示；找某个 skill 的安装说明发给同事 | 导航快、搜索可用、内容结构忠实于仓库 |
-| 同行 / 社区 | P1 | 通过某篇品鉴或 pattern 页进站，顺着链接读方法论，想安装 skill | 单页可独立成立；skill 页有清晰的 GitHub 链接 + 安装说明；有联系入口 |
-| 面试官 / 招聘方 | P2（顺带） | 从简历链接进首页，5 分钟内判断作者的系统思考能力和产出深度 | 首页能展示"在持续做什么"和产出规模；关于页有简短介绍 |
+To preserve design intent while allowing Fable 5.1 technical freedom, page interactions are classified as:
 
-**表达语言**：中文表述，社区公认的英文术语、缩写、产品名、原生 slogan 保持英文（token、computer use、shared agent、LLM、Claude Tag、MCP 等），不强行翻译，不做全站双语切换。
+- **Core**: required for information architecture and usability (accordion, drawer/sheet, sticky index, horizontal scroll-snap, keyboard/focus equivalents, reduced-motion fallback).
+- **Delight**: strongly desired expressive motion (note lift/tilt, dossier unfolding, folder reordering, sample-book browsing, subtle page continuity).
+- **Experimental**: implementation-model discretion (shared-element-like transitions, layered parallax, drag interactions, localized 3D/Three.js). Experimental effects must degrade gracefully and never block reading/navigation.
 
-## 3. 非目标（v1 明确不做）
+The design handoff specifies the intended experience, not a mandatory animation library.
 
-- 不做交互式"能力雷达"仪表盘（筛选器、时间轴拖动等）；pattern 以列表 + 详情页呈现
-- 不做评论系统；联系方式仅飞书二维码 + GitHub
-- 不做全站中英双语版本
-- 不放公司项目（百胜、Citi）内容；不放尚无成品的个人项目
-- 不做实时资讯聚合；站点内容全部是作者的分析与沉淀，按作者节奏更新
-- 不做用户系统、后台、CMS；内容源只有 git 仓库
-- 不做深色模式
+---
 
-## 4. 内容模型
+## 1. 当前技术与信息结构基线
 
-### 4.1 核心抽象：collection
-全站只有一种内容单元叫 **collection**。每个 collection 由一份配置定义：内容来自哪个仓库的哪个目录、frontmatter 字段是什么、用哪套列表页 / 详情页模板渲染。"模块"就是 collection 的展示层叫法。这是保证"加新类别不改布局代码"的唯一机制，`tech.md` 给出具体实现。
+现有站点基于 Astro 5 + GitHub Pages + Pagefind，内容由多个 GitHub 仓库同步驱动。现有主路由：
 
-### 4.2 collection 清单
+| 一级区域 | 路由 | 当前实现 |
+|---|---|---|
+| 首页 | `/` | Hero + 统计卡 + 最近更新 |
+| 方法论 | `/methodology/` | 模块网格 + Evolution Matrix |
+| 方法论详情 | `/methodology/[slug]/` | 多章节长文 |
+| 版本历史 | `/methodology/changelog/` | 版本迭代 |
+| 项目复盘 | `/retros/` | 复盘卡片列表 |
+| 项目复盘详情 | `/retros/[slug]/` | 多章节案例 |
+| 坑库 | `/pitfalls/` | 跨项目坑汇总 |
+| 观察 | `/observations/` | Pattern / 品鉴 / 公司拆解入口 |
+| Pattern | `/patterns/`、`/patterns/[slug]/` | 列表 + 详情 |
+| 产品品鉴 | `/tastings/`、`/tastings/[slug]/` | 案例列表 + 多章节详情 |
+| 公司拆解 | `/anatomies/` | 当前预留 |
+| 技能箱 | `/skills/`、`/skills/[slug]/` | Skill 列表 + SKILL.md 详情 |
+| 视觉库 | `/presets/`、`/presets/[slug]/` | Preset 列表 + iframe / token 详情 |
+| 笔记 | `/notes/` | 当前空状态 |
+| 关于 | `/about/` | 内容来源 / 技术栈 / 许可 |
+| 404 | `404` | 基础错误页 |
 
-| key | 展示名 | 来源仓库 / 路径 | v1 状态 | 条目单位 |
-|---|---|---|---|---|
-| `methodology` | 方法论 | `ai-pm-fieldbook` / `methodology/` | 有内容，需先梳理成模块（见 §7） | 一个模块 = 一个目录 |
-| `patterns` | pattern 追踪 | `ai-design-patterns` / `patterns/` | 有内容（2 篇） | 一个 pattern = 一个 md |
-| `tastings` | 产品品鉴 | `ai-business-anatomy` / `cases/tastings/` | 有内容（Claude Tag，4 章，实施时上传） | 一个案例 = 一个目录（多章） |
-| `anatomies` | 公司拆解 | `ai-business-anatomy` / `cases/anatomies/` | 空，预留 | 一个案例 = 一个目录 |
-| `skills` | 工具箱 | 各仓库的 `skills/*/SKILL.md` | 有内容（5 个 skill） | 一个 skill = 一个 SKILL.md |
-| `presets` | 视觉库 | `ai-design-patterns` / `skills/visual-library/presets/` | 有内容（1 个 preset） | 一个 preset = 一个目录 |
-| `notes` | 笔记 | 站点仓库 / `content/notes/` | 空，随写随发 | 一篇 = 一个 md |
+现有内容模型、collection loader、构建流程保持不变；本轮主要改**表现层、信息层级与交互组织方式**。
 
-**空 collection 规则**：条目数为 0 的 collection 自动从导航和首页隐藏，其列表页路由仍存在但显示空状态。不需要人工开关。
+---
 
-### 4.3 导航结构
+# 2. 首页 `/`
 
-一级导航固定 6 项，顺序即优先级：
 
-```
-方法论 · 观察 · 工具箱 · 视觉库 · 笔记 · 关于
-```
+## 2.1 页面职责
 
-- **观察** 是一个分组页，下辖 `patterns` / `tastings` / `anatomies` 三个 collection
-- 其余每项对应一个 collection 或一个静态页
-- 未来新增 collection 时，配置里声明它属于哪个一级导航项（或新增一项）
+首页不是“内容总目录”，只回答三个问题：
 
-## 5. 页面需求
+1. 这个站在研究什么？
+2. 我从哪里进入？
+3. 最近最值得看的是什么？
 
-每个页面按"读者要看到什么 → 页面包含什么 → 交互"描述。组件名与 `design.md` 一致。
+## 2.2 页面结构
 
-### 5.1 首页 `/`
-读者要在一屏内知道：这个人在持续做什么、有多少产出、从哪进。
-- Hero：站点标识 `lucyli-lpl`、一句话定位（"企业 AI PM 的方法论、观察与工具沉淀"或作者提供的文案）、两个入口按钮（方法论 / 观察）
-- 方法论概览：模块卡片网格（每张卡：模块名、一句话、章节数、最近更新），点击进模块页
-- 最近更新流：跨 collection 混排，取最近 8 条（pattern 演化记录、新品鉴、新笔记都算"更新"），每条显示类型标签 + 标题 + 日期
-- 工具箱速览：skill 卡片一行（名称 + 一句话），"查看全部"
-- 页脚：GitHub、飞书、RSS
+### A. Hero / Knowledge Desk
 
-### 5.2 方法论
+左侧：
+- kicker：`A QUIETER MIND · A BRIGHTER YOU`（可替换，但保持低权重）
+- H1：已确认主标题
+- 2–3 行副文
+- CTA：`进入知识地图` / `查看最近更新`
 
-**模块列表页 `/methodology/`**
-- 页首：方法论名称（AI 应用能力边界方法论）、当前版本号（读自内容仓库）、一句话内核
-- "从哪读起"表：按阶段导读（内容来自仓库 README，作为一个 md 片段渲染）
-- 模块卡片列表：按顺序排列，每张卡显示模块编号、名称、一句话、包含的章节数、关联 skill 数
-- 迭代记录入口：链接到时间线页
+右侧：五张“档案便签”作为一级入口：
+- 方法论
+- 观察
+- 技能箱
+- 视觉库
+- 笔记
 
-**模块详情页 `/methodology/[module]/`**
-- 页首：模块编号 + 名称 + 一句话 + 所属版本
-- 模块示意图：一张静态 SVG（内容仓库提供），放在正文前
-- 正文：该模块下的章节顺序拼接，或按章节分页（章节 ≥ 4 时右侧显示章节目录 ChapterNav）
-- 侧栏 / 底部："关联 skill"（配置声明）、"关联案例"（品鉴或 pattern 中引用了本模块的条目，自动反链）
-- 上一模块 / 下一模块 导航
+交互：
+- pointer hover：`translateY(-6px)` + `rotateX/rotateY ≤ 2deg`
+- focus-visible：与 hover 等价
+- 点击整张便签进入栏目
+- 桌面端可做 12–24px 的轻微 scroll parallax；移动端关闭
+- `prefers-reduced-motion` 时完全静止
 
-**迭代记录页 `/methodology/changelog/`**
-- 纵向时间线：v1 → v2.1 每个版本一个节点，显示版本号、日期（若有）、变更摘要、影响的模块（配置或 frontmatter 声明）
-- 这是方法论"活着"的证据，需要在模块列表页有醒目入口
+### B. 合并内容屏
 
-### 5.3 观察
+一屏完成“正在沉淀 + 精选内容”。
 
-**分组页 `/observations/`**
-- 三个 collection 各一个区块：名称、一句话说明、条目数、最新 3 条；空 collection 显示"筹备中"文案，不显示条目
+左侧 28–32%：`正在沉淀`
+- 最多 3 条长期主题
+- 每条只展示标题 + 一句话问题
+- 不显示详细文章、更新时间、统计等噪音
 
-**pattern 列表页 `/patterns/`**
-- 页首说明：这是什么（pattern 库定位一句话）、当前条目数、最后扫描日期（读自 INDEX.md）
-- 列表：每行 pattern 英文名 + 中文名、status 徽章（concept / landed / evolving / converging）、heat、first_seen、产品数、tags
-- 可按 status 过滤（纯前端、无需服务端）
+右侧 68–72%：`精选内容`
+- 1 个主内容 + 2 个次内容
+- 可混合方法论 / 工具 / 笔记 / 品鉴
+- 最多 3 条
+- 第二条思考内容可使用标题“慢，就是快”
 
-**pattern 详情页 `/patterns/[slug]/`**
-- 页首：pattern_name、chinese_name、status 徽章、heat、first_seen、originated_by、tags、related_patterns（链接）
-- 正文：按仓库 DATA_SCHEMA 的段落结构渲染（Definition / Implementations / Evolution Log / PM Notes），每段一个锚点，ChapterNav 可跳转
-- Evolution Log 段以时间线组件渲染（日期 + driver 类型徽章 + 描述）
-- 反链区："提到此 pattern 的品鉴"（自动）
+### C. 窄幅 Footer
 
-**品鉴列表页 `/tastings/`**
-- 卡片列表：产品名、公司、发布日期、分析日期、一句话结论、涉及的 pattern 标签
-- 顶部说明：链接到 ai-product-tasting skill 页（"这些分析用这个框架产出"）
+高度显著小于前两屏：88–112px。
+- logo
+- 站点一句话
+- 导航简表
+- GitHub / RSS
 
-**品鉴详情页 `/tastings/[slug]/`**
-- 页首：产品名、公司、产品发布日期、分析日期、框架版本、一句话结论（verdict 卡）
-- 正文：多章节顺序渲染，ChapterNav 固定显示章节列表
-- 章节内出现 pattern 名时可链到 pattern 页（实现见 tech.md）
-- 底部：涉及的 pattern 列表、使用的框架（skill 链接）
+不要增加第四个“重要内容区”。
 
-**公司拆解列表 / 详情页 `/anatomies/`**
-- 结构同品鉴，字段见 tech.md 内容契约；v1 为空状态
+## 2.3 数据策略
 
-### 5.4 工具箱 `/skills/`
-- 列表页：每个 skill 一张 SkillCard——名称、一句话、来源仓库、所属方法论模块（若有）、"在站内产出了什么"（例如 ai-product-tasting → N 篇品鉴）
-- 详情页 `/skills/[slug]/`：
-  - 页首：名称、一句话、GitHub 链接（直达 SKILL.md）
-  - 安装说明：固定模板（Claude 环境 user skill 目录放置方式 + Claude Code 放置方式），文案由站点维护，不从 SKILL.md 读
-  - SKILL.md 正文渲染（去掉 frontmatter）
-  - 关联：站内用该 skill 产出的条目列表
+首页数据由现有 collection 直接组合：
+- 导航便签：固定配置，不依赖数量统计。
+- 正在沉淀：建议在 `site.config.ts` 增加 `currentFocus[]` 静态配置，避免自动生成导致语义失控。
+- 精选内容：建议 frontmatter 增加可选 `featured: true` 或在 `site.config.ts` 维护 `featuredEntries[]`。
+- 不再显示“8 模块 / 4 Skill”等统计卡；统计信息转移到各栏目页。
 
-### 5.5 视觉库 `/presets/`
-- 列表页：按输出类型分组（html-report / html-slides / html-demo-pc / html-demo-mobile），每组标题 + 一句话规则说明（来自各组 `_README.md`）；组内每个 preset 一张 PresetCard：预览图、preset 名 + 中文名、一句话、tags；空组显示"暂无 preset"
-- 详情页 `/presets/[slug]/`：
-  - 页首：名称、所属类型、来源（origin 字段）、tags
-  - 预览：`example.html` 以 iframe 嵌入，可"新窗口打开"
-  - TOKENS.md 正文渲染（设计决策、色板、字体等）
-  - "如何使用"：固定文案，指向 visual-library skill 页
+---
 
-### 5.6 笔记 `/notes/`
-- 列表：按日期倒序，标题 + 日期 + 摘要 + tags
-- 详情页：标准文章页，支持全部 markdown 特性与 callout
-- 笔记是站点唯一"自有内容"，不依赖外部仓库
+# 3. 方法论 `/methodology/`
 
-### 5.7 关于 `/about/`
-- 一段介绍（作者提供文案，占位可用：企业 AI PM，做 agent 产品，写方法论，攒 skill）
-- 联系：飞书个人二维码（图片）、GitHub 链接
-- 站点说明：内容仓库列表 + 各自链接，"本站由这些仓库自动构建"
 
-### 5.8 全站功能
-- **搜索**：全站静态搜索（Pagefind），入口在 header，覆盖所有 collection 正文
-- **RSS**：`/rss.xml`，聚合全部 collection 的更新
-- **404 页**
-- **面包屑**：二级以下页面显示
+## 3.1 目标
 
-## 6. 跨 collection 关联
+像翻一套“持续修订的研究手册”，而不是浏览 8 张等权功能卡。
 
-| 关系 | 方向 | 数据来源 | 展示位置 |
-|---|---|---|---|
-| 品鉴 → pattern | 显式 | 品鉴 frontmatter `patterns: [...]` | 品鉴页底部 |
-| pattern → 品鉴 | 反链 | 由上一条计算 | pattern 页底部 |
-| pattern ↔ pattern | 显式 | `related_patterns` | pattern 页首 |
-| skill → 方法论模块 | 显式 | skill 配置 `module` | skill 卡片 |
-| 方法论模块 → skill | 反链 | 由上一条计算 | 模块页侧栏 |
-| skill → 产出 | 反链 | 品鉴 / pattern frontmatter `produced_by` | skill 页 |
-| 迭代记录 → 模块 | 显式 | changelog 条目 `modules: [...]` | 时间线节点 |
+## 3.2 索引页
 
-所有反链在构建时计算，不需要作者手动维护两边。
+- 页首保留：方法论名、当前版本、核心命题。
+- 移除 2×N 模块网格。
+- 模块改为 `ModuleAccordion`：纵向档案条。
+- 默认第一个模块展开；其他收起。
+- 折叠态：编号 / 标题 / 一句话。
+- 展开态：增加章节数、关联 Skill、最近修订、进入详情。
+- Evolution Matrix 不默认完整展开：
+  - 默认只显示横向版本节点 `v1 → v1.4 → v2.0 → v2.1`
+  - 点击 `展开演进` 再展示完整矩阵或进入 changelog。
 
-## 7. 内容更新流程（作者视角）
+## 3.3 模块详情
 
-```
-写 / 改 markdown（在对应内容仓库，用 Claude Code 或 skill）
-  → git push 到内容仓库
-  → 内容仓库触发站点重建（自动）
-  → 站点更新（≤ 10 分钟）
-```
+统一 `Article System`：
+- 页面 title/meta
+- 核心命题摘要块
+- 正文宽度 720–780px
+- 右侧 sticky `ChapterNav`
+- 移动端 ChapterNav 折叠为顶部目录
+- 关联 skill / 案例放到文章尾部，不中断正文
 
-作者不需要碰站点仓库，除非：写笔记（笔记在站点仓库）、改关于页、改 collection 配置。
+## 3.4 版本历史
 
-**v1 上线前的内容前置工作**（在内容仓库完成，不属于站点开发，但站点依赖它）：
-1. `ai-pm-fieldbook`：把单文件方法论拆成模块目录，每模块一张 SVG 示意图，迭代记录拆成结构化 changelog——具体结构见 `tech.md` §3.1
-2. `ai-business-anatomy`：新建 `cases/tastings/claude-tag/`，放入 4 章 markdown + `case.md` 元数据——结构见 `tech.md` §3.3
-3. `ai-design-patterns`：scholar preset 补 `preview.png`；各 preset 类型 `_README.md` 已有，无需改
+`/methodology/changelog/` 使用“修订档案”视觉：
+- 版本节点纵向时间线
+- 当前版本用 muted gold 标记
+- 每个版本默认只展示 summary
+- 点击展开 details 和 affected modules
 
-## 8. 范围与阶段
+---
 
-**v1（本次交付）**：§5 全部页面；`anatomies` 与空 preset 类型以空状态上线；搜索、RSS。
+# 4. 观察 `/observations/` 与 Pattern
 
-**v1 之后可能的扩展（方案需容纳，不实现）**：
-- 新 collection：个人作品集、公司项目（脱敏后）、阅读笔记
-- pattern 关系图 / 时间线的交互视图
-- visual-library 扩展到 slides / demo 类型后，preset 详情页需要支持非单页 HTML 的预览方式（例如截图轮播）
-- 评论（giscus）——若启用只需在文章页模板加一个组件
 
-## 9. 验收标准
+## 4.1 观察 Hub
 
-1. 三个内容仓库任一 push 后，站点在 10 分钟内反映变更，无人工操作
-2. 新增一个 collection 的操作仅涉及：一份配置文件 + 内容目录；不修改任何页面模板或布局组件
-3. 空 collection 不出现在导航与首页；有内容后自动出现
-4. 所有反链（§6）正确，且不需要作者手动维护两端
-5. 所有页面 375px 宽度可读；正文页 Lighthouse 性能 ≥ 90
-6. 搜索可命中方法论、pattern、品鉴正文中的关键词
-7. 全站无深色主题、无科技蓝渐变、无 emoji（设计约束见 design.md）
-8. 术语保持原文（token、computer use、MCP 等不被翻译）
+三类内容不要再做三张并排卡片。
+
+改为“档案夹 / folder tabs”：
+- Pattern 追踪
+- 产品品鉴
+- 公司拆解
+
+桌面端：
+- 当前 folder 处于前景
+- 另外两个略后退、错位
+- click / wheel / trackpad 横向切换
+
+移动端：
+- 横向 `scroll-snap`
+- 每次完整露出 1 张 + 下一张 10–15% 提示
+
+## 4.2 Pattern 列表 `/patterns/`
+
+- 保持高信息密度，但减少视觉噪音。
+- Status filter sticky。
+- 每个 pattern 采用 compact row，不做卡片墙。
+- 点击 row：桌面先开右侧 preview drawer；移动端直接进入详情。
+- drawer 只显示 20–30% 内容：definition + status + heat + latest evolution + `阅读全文`。
+
+## 4.3 Pattern 详情
+
+- metadata 作为窄条置于标题下。
+- 内容顺序固定：Definition → Evidence / Implementations → Evolution → PM Notes。
+- Evolution 使用时间线。
+- related patterns / 品鉴反链放文末。
+
+---
+
+# 5. 产品品鉴 / 公司拆解
+
+
+## 5.1 列表页
+
+视觉语义：**研究案卷 / dossier shelf**。
+
+- 第一条为主案卷（Featured Case）。
+- 其余条目以“书脊 / 索引卡”横向滚动。
+- 不做 2×N 卡片网格。
+- 卡片优先展示 verdict，不展示长 summary。
+
+公司拆解与品鉴共用同一 `CaseIndex`，只替换字段。
+
+## 5.2 详情页
+
+顺序：
+1. 产品 / 公司 title + meta
+2. `Verdict`：唯一深墨蓝实色块
+3. 章节 tabs / ChapterNav
+4. 正文
+5. 关联 Pattern / 使用框架
+
+注意：Verdict 必须是真判断，不是摘要。
+
+---
+
+# 6. 项目复盘 / 坑库
+
+
+## 6.1 复盘列表
+
+目标：表达“现实如何反向修订方法论”。
+
+- 使用纵向“项目档案堆”。
+- 默认每条折叠。
+- 折叠态优先显示：状态 / 坑数 / 影响模块 / 是否推动版本。
+- 当前项目可默认展开 1 条。
+- `Pitfall` 不使用红色警告，统一用 muted gold。
+
+## 6.2 复盘详情
+
+章节建议：
+- 背景与目标
+- 关键决策
+- 失败 / Pitfalls
+- 判断发生了什么变化
+- 方法论修订
+- 下一次怎么做
+
+其中“判断如何变化”要视觉上高于项目过程描述。
+
+## 6.3 坑库
+
+`/pitfalls/` 作为跨项目索引：
+- 默认按 methodology module 分组
+- 每组 accordion
+- 展开后显示来源项目、影响、修复原则
+- 避免“错误大全”的负面感，定位为经验索引
+
+---
+
+# 7. 技能箱 `/skills/`
+
+
+## 7.1 命名
+
+站点展示文案统一：**技能箱**。
+
+代码层 collection key 仍保留 `skills`，避免不必要迁移。
+
+## 7.2 列表页
+
+- 不做两列 SkillCard。
+- 使用 `SkillDrawer / accordion`。
+- 折叠态：display name / slug / 一句话用途。
+- 展开态：来源 repo / 关联方法论 / 站内产出数量 / CTA。
+
+## 7.3 详情页
+
+视觉语义：**recipe / 可调用认知模块**。
+
+信息优先级：
+1. 适用什么问题
+2. 如何安装 / 调用（带 copy button）
+3. 输入要求
+4. 分析步骤
+5. 输出结构
+6. 站内实际产出
+7. GitHub 原始 SKILL.md
+
+不能只把 SKILL.md 原样渲染后就结束。
+
+---
+
+# 8. 视觉库 `/presets/`
+
+
+## 8.1 列表页
+
+视觉语义：**样本册 / swatch archive**。
+
+- 左侧：output type 纵向索引。
+- 中间：当前 preset 大预览。
+- 底部 / 右侧：其他 preset 横向滑动。
+- 不使用 2 列 Preview Card 网格。
+
+## 8.2 详情页
+
+- 真实 iframe preview 为第一视觉层。
+- `TOKENS.md` 默认折叠。
+- 支持：
+  - 新窗口预览
+  - 复制提示词 / preset identifier
+  - 展开 Typography / Color / Components / Density
+
+---
+
+# 9. 笔记 / 关于 / 404 / 搜索
+
+
+## 9.1 笔记 `/notes/`
+
+不要做传统博客卡片墙。
+
+- 按年月纵向索引。
+- 默认只显示日期 / 标题 / tag。
+- hover / focus 可展开 1–2 行摘要。
+- 未有内容时：文案使用“正在整理 / 正在沉淀”，不要“敬请期待”。
+
+建议后续补 `/notes/[slug]/`，复用统一 Article System。
+
+## 9.2 关于 `/about/`
+
+弱化“关于我”，保留“关于这个站”。
+
+只讲：
+- 为什么建站
+- 内容来源
+- 如何持续更新
+- 开源技术栈
+- 许可 / 联系
+
+不放履历时间线，不放人物照片，不做职业宣传。
+
+## 9.3 Search
+
+保留 Pagefind，视觉重构为“检索档案”：
+- 搜索框顶部固定
+- result group 显示 collection label
+- title + snippet + type
+- 键盘上下选择 / Enter 打开 / Esc 关闭
+
+## 9.4 404
+
+设计为“空档案抽屉”：
+- `这份档案不存在或已被移动`
+- CTA：返回首页 / 搜索档案
+- 不做大插画，不抢整站视觉。
+
+---
+
+# 10. 统一详情页系统
+
+
+长文页面统一使用 `Article System`：
+
+- `ArticleHeader`
+- `MetaStrip`
+- 可选 `Verdict / KeyClaim`
+- `Prose`
+- `ChapterNav`
+- `RelatedEntries`
+
+适用：
+- methodology detail
+- pattern detail
+- tasting/anatomy detail
+- retro detail
+- skill detail（正文段落略有差异）
+- note detail（未来）
+
+这样确保内容类型扩展时，仍保持阅读节奏一致。
+
+---
+
+# 11. 全局交互规则
+
+## 11.1 渐进披露优先级
+
+优先使用：
+1. accordion
+2. sticky index
+3. horizontal scroll / scroll-snap
+4. preview drawer
+5. hover / focus reveal
+
+少用：
+- 同屏 6+ 张平铺卡片
+- 大面积自动轮播
+- 内容无关 3D / canvas 特效
+
+## 11.2 动效预算
+
+- hover：150–220ms
+- accordion：220–320ms
+- drawer：260–360ms
+- section reveal：320–450ms
+- hero parallax：只做轻位移，不做缩放穿越
+
+所有动效使用 transform + opacity，避免 layout thrash。
+
+## 11.3 无障碍
+
+- 所有 hover 必须有 keyboard focus 等价。
+- accordion 使用 `<button aria-expanded>`。
+- drawer 使用 dialog / focus trap。
+- `prefers-reduced-motion: reduce` 时取消 tilt / parallax / smooth choreography。
+- 颜色不是唯一状态信息载体。
+
+---
+
+# 12. 响应式
+
+## Desktop ≥ 1024
+- Hero 50/50 左右布局。
+- 档案便签可 hover tilt。
+- ChapterNav sticky。
+- preview drawer 从右侧进入。
+
+## Tablet 768–1023
+- Hero 45/55。
+- 五张便签缩小并允许局部横向滑动。
+- ChapterNav 改折叠目录。
+
+## Mobile < 768
+- Hero 文案在上，入口便签下方横向 scroll-snap。
+- 当前关注和精选改为上下布局。
+- 主精选 1 条 + 次精选最多 2 条。
+- 所有内容抽屉直接进入详情或 full-screen sheet。
+- Footer 单行信息优先，次要导航隐藏。
+
+---
+
+# 13. 开发验收
+
+### 设计一致性
+- [ ] 首页无统计卡片墙。
+- [ ] 首页中段仅“正在沉淀 + 精选内容”。
+- [ ] Footer 明显低于主体视觉权重。
+- [ ] `工具箱` 所有用户可见文案改为 `技能箱`。
+- [ ] 全站没有大面积纯科技蓝 / 霓虹渐变。
+- [ ] 毛玻璃只用于导航、便签、抽屉、轻容器，不用于长文正文。
+
+### 交互
+- [ ] 至少 4 类页面使用渐进披露而非全量平铺。
+- [ ] 所有 accordion 可键盘操作。
+- [ ] 移动端 horizontal scroll 有 scroll-snap。
+- [ ] reduced motion 生效。
+
+### 内容
+- [ ] 首页最多 3 条精选。
+- [ ] 首页当前关注最多 3 条。
+- [ ] 每个详情页存在明确的下一步：关联内容 / 下一章节 / GitHub 源。
+
+---
+
+# 14. 实施建议顺序
+
+P0：Design System / tokens / Header / Footer / Search  
+P0：首页  
+P0：统一 Article System  
+P1：方法论 + Pattern  
+P1：技能箱 + 视觉库  
+P1：复盘 + 坑库  
+P2：品鉴 / 公司拆解  
+P2：笔记 + About + 404
+

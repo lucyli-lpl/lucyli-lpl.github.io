@@ -5,3 +5,4 @@ dist/
 public/presets/
 public/content/
 *.tsbuildinfo
+lucy_site_handoff_clean/

@@ -1,24 +1,27 @@
+/* 长文正文：纸面、窄栏、克制。不放 glass。 */
 .prose {
   font-family: var(--font-body);
   font-size: var(--fs-body);
-  line-height: var(--lh-body);
-  color: var(--ink);
+  line-height: var(--lh-prose);
+  color: var(--text);
 }
 
 .prose h2 {
   font-family: var(--font-display);
   font-size: var(--fs-h2);
   font-weight: 700;
+  color: var(--ink);
   margin-top: var(--sp-6);
   margin-bottom: var(--sp-2);
   padding-bottom: var(--sp-1);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 
 .prose h3 {
   font-family: var(--font-body);
   font-size: var(--fs-h3);
   font-weight: 600;
+  color: var(--ink);
   margin-top: var(--sp-4);
   margin-bottom: var(--sp-1);
 }
@@ -27,6 +30,7 @@
   font-family: var(--font-body);
   font-size: var(--fs-body);
   font-weight: 600;
+  color: var(--ink-2);
   margin-top: var(--sp-3);
   margin-bottom: var(--sp-1);
 }
@@ -41,17 +45,23 @@
 }
 
 .prose li {
-  margin-bottom: 0.25em;
+  margin-bottom: 0.3em;
+}
+
+.prose li::marker {
+  color: var(--text-3);
 }
 
 .prose a {
-  color: var(--accent);
+  color: var(--blue);
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
+  text-decoration-color: var(--blue-soft);
 }
 
 .prose a:hover {
+  text-decoration-color: var(--blue);
   text-decoration-thickness: 2px;
 }
 
@@ -60,22 +70,27 @@
 }
 
 .prose blockquote {
-  border-left: 3px solid var(--gray-300);
-  color: var(--gray-700);
+  border-left: 2px solid var(--silver);
+  color: var(--text-2);
   padding-left: var(--sp-2);
-  margin: var(--sp-2) 0;
+  margin: var(--sp-3) 0;
+}
+
+.prose blockquote p:last-child {
+  margin-bottom: 0;
 }
 
 .prose code {
   font-family: var(--font-mono);
   font-size: 0.88em;
-  background: var(--gray-100);
-  padding: 0.15em 0.35em;
+  background: var(--paper-2);
+  padding: 0.15em 0.4em;
   border-radius: var(--radius);
 }
 
 .prose pre {
   background: var(--paper-2);
+  border: 1px solid var(--line-soft);
   padding: var(--sp-2);
   border-radius: var(--radius);
   overflow-x: auto;
@@ -90,18 +105,25 @@
 .prose table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: var(--sp-2);
-  font-size: var(--fs-meta);
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-small);
+  line-height: 1.6;
 }
 
 .prose thead {
-  background: var(--gray-100);
+  background: var(--paper-2);
+}
+
+.prose th {
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .prose th, .prose td {
-  border: 1px solid var(--border);
-  padding: 0.5em 0.75em;
+  border: 1px solid var(--line);
+  padding: 0.55em 0.8em;
   text-align: left;
+  vertical-align: top;
 }
 
 .prose img, .prose svg {
@@ -111,17 +133,18 @@
 
 .prose figcaption {
   font-size: var(--fs-meta);
-  color: var(--gray-500);
+  color: var(--text-3);
   margin-top: var(--sp-1);
 }
 
 .prose strong {
   font-weight: 600;
+  color: var(--ink);
 }
 
 .prose hr {
   border: none;
-  border-top: 1px solid var(--gray-200);
+  border-top: 1px solid var(--line-soft);
   margin: var(--sp-4) 0;
 }
 

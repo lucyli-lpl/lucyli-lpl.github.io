@@ -1,0 +1,125 @@
+/* ============================================================
+   motion.css — 动效原语 + reduced-motion
+   design.md §7 / §10。全部 transform + opacity，不动 layout。
+   ============================================================ */
+
+/* ---------- Lift（便签 / 卡片抬起） ---------- */
+.lift {
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+  will-change: transform;
+}
+
+.lift:hover,
+.lift:focus-visible {
+  transform: translateY(-6px) rotate(.25deg);
+  box-shadow: var(--shadow-lift);
+}
+
+/* ---------- Reveal（section 进入） ---------- */
+/* 由 IntersectionObserver 加 .is-in；无 JS 时保持可见 */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity var(--dur-slow) var(--ease-soft),
+    transform var(--dur-slow) var(--ease-soft);
+}
+
+html.js .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* 同组内错开 */
+html.js .reveal[data-delay="1"] { transition-delay: 60ms; }
+html.js .reveal[data-delay="2"] { transition-delay: 120ms; }
+html.js .reveal[data-delay="3"] { transition-delay: 180ms; }
+html.js .reveal[data-delay="4"] { transition-delay: 240ms; }
+
+/* ---------- Accordion（grid 0fr → 1fr） ---------- */
+.acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-standard);
+}
+
+.acc-panel > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.acc-panel.is-open {
+  grid-template-rows: 1fr;
+}
+
+/* ---------- Horizontal rail（scroll-snap） ---------- */
+.rail {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--sp-3);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--sp-1);
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.rail > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* ---------- View Transitions（Astro ClientRouter） ---------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: var(--ease-soft);
+}
+
+/* ---------- Focus ---------- */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .lift:hover,
+  .lift:focus-visible {
+    transform: none;
+  }
+
+  html.js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

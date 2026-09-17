@@ -1,46 +1,112 @@
+/* ============================================================
+   tokens.css — lucyli-lpl Design System v2
+   主题：Editorial Research Archive / 编辑部式研究档案室
+   纸张的温度 + 蓝灰的理性 + 银色的精致 + 少量金色的标记感
+   见 design.md §2–§4、§10
+   ============================================================ */
+
 :root {
-  /* 色彩 — 继承 scholar */
-  --ink:          #1a1a1a;
-  --paper:        #fafaf7;
-  --paper-2:      #f3f3ef;
-  --accent:       #2563eb;
-  --accent-light: #dbeafe;
-  --warm:         #c2410c;
-  --warm-light:   #fff7ed;
-  --green:        #166534;
-  --green-light:  #f0fdf4;
-  --gray-100:     #f3f4f6;
-  --gray-200:     #e5e7eb;
-  --gray-300:     #d1d5db;
-  --gray-500:     #6b7280;
-  --gray-700:     #374151;
-  --border:       #d1d5db;
+  /* ---------- Foundation: paper ---------- */
+  --paper:        #F6F2E9;
+  --paper-2:      #EEE8DD;
+  --paper-3:      #E5DED1;
+  --paper-white:  #FCFAF6;
 
-  /* 字体 */
-  --font-display: "Noto Serif SC", "Songti SC", serif;
-  --font-body:    "Inter", -apple-system, "PingFang SC", "Noto Sans SC", sans-serif;
-  --font-mono:    "JetBrains Mono", "SF Mono", Menlo, monospace;
+  /* ---------- Ink / primary ---------- */
+  --ink:          #113053;
+  --ink-2:        #294C6F;
+  --ink-3:        #5A7187;
 
-  /* 字号 */
-  --fs-h1: 2rem;
-  --fs-h2: 1.4rem;
-  --fs-h3: 1.05rem;
-  --fs-body: 0.95rem;
-  --fs-meta: 0.8rem;
-  --fs-tag: 0.7rem;
-  --lh-body: 1.75;
+  /* ---------- Blue-gray ---------- */
+  --blue:         #3B6287;
+  --blue-soft:    #89A2B8;
+  --blue-wash:    #E6EDF2;
 
-  /* 间距（8 基准） */
+  /* ---------- Silver ---------- */
+  --silver:       #B7C0C8;
+  --silver-dark:  #7C8893;
+  --silver-light: #DCE2E6;
+
+  /* ---------- Muted gold — 只做标记 ---------- */
+  --gold:         #AC8E56;
+  --gold-soft:    #DCCBA8;
+  --gold-wash:    #F1E9D9;
+
+  /* ---------- Text neutrals ---------- */
+  --text:         #252C32;
+  --text-2:       #5C6670;
+  --text-3:       #879099;
+
+  /* ---------- Lines ---------- */
+  --line:         rgba(17, 48, 83, .16);
+  --line-soft:    rgba(17, 48, 83, .08);
+
+  /* ---------- Glass ---------- */
+  --glass-bg:     rgba(247, 249, 250, .56);
+  --glass-bg-hi:  rgba(255, 255, 255, .72);
+  --glass-border: rgba(255, 255, 255, .72);
+  --glass-shadow: 0 18px 45px rgba(25, 42, 58, .10);
+
+  /* ---------- Shadows ---------- */
+  --shadow-paper: 0 1px 2px rgba(17, 48, 83, .05), 0 6px 20px rgba(17, 48, 83, .05);
+  --shadow-lift:  0 10px 30px rgba(17, 48, 83, .12), 0 2px 6px rgba(17, 48, 83, .06);
+
+  /* ---------- Semantic aliases（旧组件 API → 新主题） ---------- */
+  --accent:       var(--blue);
+  --accent-light: var(--blue-wash);
+  --warm:         var(--gold);
+  --warm-light:   var(--gold-wash);
+  --green:        #526E63;
+  --green-light:  #E8EEEA;
+  --border:       var(--line);
+
+  /* 旧灰阶别名：按用途映射，不再是中性灰 */
+  --gray-100:     var(--paper-2);      /* 轻底：tag、code、thead */
+  --gray-200:     var(--paper-3);      /* 分隔线（实色） */
+  --gray-300:     var(--silver-light); /* 边框 */
+  --gray-500:     var(--text-3);       /* 次要文字 */
+  --gray-700:     var(--text-2);       /* 正文次级 */
+
+  /* ---------- Typography ---------- */
+  --font-display: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-body:    "Inter", -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-mono:    "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  --font-hand:    "Caveat", "Kaiti SC", "KaiTi", cursive;
+
+  --fs-display: clamp(2.4rem, 4.6vw, 4.4rem);
+  --fs-h1:      clamp(1.9rem, 3vw, 3rem);
+  --fs-h2:      clamp(1.45rem, 1.9vw, 2rem);
+  --fs-h3:      1.15rem;
+  --fs-body:    0.98rem;
+  --fs-small:   0.86rem;
+  --fs-meta:    0.78rem;
+  --fs-tag:     0.7rem;
+
+  --lh-body:    1.7;
+  --lh-prose:   1.86;
+
+  /* ---------- Spacing（8 基准） ---------- */
   --sp-1: 0.5rem;
   --sp-2: 1rem;
   --sp-3: 1.5rem;
   --sp-4: 2rem;
-  --sp-6: 3rem;
-  --sp-8: 4rem;
+  --sp-5: 3rem;
+  --sp-6: 4.5rem;
+  --sp-7: 7rem;
+  --sp-8: 4rem; /* 旧别名，保留给已有组件 */
 
-  /* 布局 */
-  --w-prose: 780px;
-  --w-wide:  1080px;
+  /* ---------- Layout ---------- */
+  --w-prose: 760px;
+  --w-wide:  1180px;
+  --w-hero:  1320px;
   --w-side:  220px;
   --radius:  4px;
+  --radius-lg: 10px;
+
+  /* ---------- Motion ---------- */
+  --ease-standard: cubic-bezier(.2, .8, .2, 1);
+  --ease-soft:     cubic-bezier(.22, .61, .36, 1);
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 420ms;
 }

@@ -1,0 +1,155 @@
+/* ============================================================
+   materials.css — 纸 / 玻璃 / 金属 / 金色标记
+   设计语义见 design.md §5。所有颜色走 tokens，不写裸色值。
+   ============================================================ */
+
+/* ---------- Paper ---------- */
+.paper {
+  background: var(--paper);
+  color: var(--text);
+}
+
+.paper-white {
+  background: var(--paper-white);
+  color: var(--text);
+}
+
+/* 一张"放在桌上的纸"：极淡边 + 轻投影 */
+.paper-card {
+  background: var(--paper-white);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-paper);
+}
+
+/* 档案条 / 索引卡：左侧金色书脊线 */
+.archive-row {
+  background: var(--paper-white);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--gold-soft);
+  border-radius: var(--radius);
+}
+
+/* ---------- Glass ---------- */
+/* 无 backdrop-filter 支持时退化为不透明暖白 */
+.glass,
+.glass-hi {
+  background: var(--paper-white);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-lg);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .glass {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(18px) saturate(.85);
+    backdrop-filter: blur(18px) saturate(.85);
+  }
+  .glass-hi {
+    background: var(--glass-bg-hi);
+    -webkit-backdrop-filter: blur(14px) saturate(.9);
+    backdrop-filter: blur(14px) saturate(.9);
+  }
+}
+
+/* ---------- Metal / Silver ---------- */
+/* 银色只做线、边、夹子，不做面 */
+.metal-line {
+  border-color: var(--silver) !important;
+}
+
+.divider-metal {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--silver) 20%, var(--silver) 80%, transparent);
+}
+
+/* 回形针 / 夹子：一个小小的银色装饰，用于卡片角 */
+.clip::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 18px;
+  width: 22px;
+  height: 12px;
+  border: 2px solid var(--silver-dark);
+  border-bottom: 0;
+  border-radius: 11px 11px 0 0;
+  background: transparent;
+}
+
+/* ---------- Gold marker ---------- */
+/* 编辑标记色：编号、当前项、修订、坑 */
+.section-num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: .12em;
+  color: var(--gold);
+}
+
+.marker-gold {
+  color: var(--gold);
+}
+
+.dot-gold {
+  position: relative;
+  padding-left: .9em;
+}
+
+.dot-gold::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  transform: translateY(-50%);
+}
+
+.underbar-gold {
+  box-shadow: inset 0 -2px 0 var(--gold);
+}
+
+/* ---------- Hand annotation ---------- */
+/* 装饰性英文旁注，一页 ≤ 2 处 */
+.hand {
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--ink-3);
+  transform: rotate(-3deg);
+  display: inline-block;
+}
+
+/* ---------- Photo layer ---------- */
+/* 摄影素材只作为底层氛围：淡化、与纸色相融 */
+.photo-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.photo-layer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, var(--paper) 0%, color-mix(in srgb, var(--paper) 72%, transparent) 42%, color-mix(in srgb, var(--paper) 18%, transparent) 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--paper) 30%, transparent), var(--paper) 96%);
+}
+
+.photo-layer--soft::after {
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+}

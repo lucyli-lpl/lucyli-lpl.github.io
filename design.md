@@ -1,311 +1,687 @@
-# design.md — lucyli-lpl 个人站点 界面规范
+# design.md — lucyli-lpl Design System v2
 
-版本 v1.0 · 2026-09-05
-配套文档：`PRD.md`（页面需求）、`tech.md`（数据与实现）
-本文档面向负责界面的 AI（v0 / Lovable / Claude Code 等）。它**不包含数据来源**——所有内容假定以结构化数据传入组件；数据字段名与 `tech.md` 内容契约一致。
+版本：v2.0 · 2026-09-17  
+主题：**Editorial Research Archive / 编辑部式研究档案室**  
+适用：Astro 5；交互实现技术开放，以视觉保真、渐进增强、性能与可维护性为约束
 
 ---
 
-## 0. 交付要求
+# 0. 一句话设计原则
 
-- 产出物：一套可直接迁移进 Astro 的组件（HTML + CSS，允许极少量原生 JS；不引入 React / Vue / Tailwind 运行时）。若执行环境只能产出 React，请保证每个组件是无状态纯展示组件，且样式用 CSS 变量而非工具类。
-- 必须先产出 `tokens.css`（§2），所有组件只引用变量，不写裸色值。
-- 组件与页面的命名必须使用本文档的名字（§4、§5），技术侧会按名字集成。
-- 字体：Google Fonts CDN 引入 Noto Serif SC、Inter、JetBrains Mono。
+> **纸张的温度 + 蓝灰的理性 + 银色的精致 + 少量金色的标记感。**
 
-## 1. 设计方向
+设计不是为了“更像科技产品”，而是为了让方法、学习与实践看起来像一套正在持续修订的知识档案。
 
-### 1.1 基调
-延续作者 visual-library 中 **scholar（克制学术风）** 的底子，做成站点变体：暖白纸面、衬线中文标题、无框卡片、克制的语义色。整体感觉像一本排版讲究的工作手册，不像 SaaS 产品页。
+---
 
-### 1.2 硬性禁止
-- 不做深色模式、不用深色大面积背景（verdict 卡是唯一允许的深色块）
-- 不用科技蓝渐变、霓虹、玻璃拟态、发光描边
-- 不用 `#F4F1EA` 一类奶油底和 `#D97757` 一类珊瑚 / 陶土强调色
-- 不用 emoji；图标仅允许线性单色图标（建议 Lucide），且只在导航、按钮、元数据处使用
-- 不用统一投影的卡片网格作为主布局；卡片默认无阴影，用边框和留白分隔
-- 不做进场动画、视差；允许 hover 状态过渡 ≤ 150ms
+# 1. 设计语义
 
-### 1.3 层级原则
-scholar 为单篇报告设计，站点需要更多层级。规则：
-- 页面 ≤ 3 个字号层级同时可见（标题 / 正文 / 元数据）
-- 用**留白和边框**分区，不用背景色块分区
-- 强调靠字重和衬线 / 无衬线切换，不靠颜色
-- 颜色只承载语义（链接、状态、callout 类型），不承载装饰
+## 1.1 核心隐喻
 
-## 2. Tokens（`tokens.css`）
+站点是一个可进入、可翻阅、可检索的“编辑部 / 研究档案室”。
+
+视觉对象对应关系：
+
+| 网站元素 | 视觉隐喻 |
+|---|---|
+| 一级栏目 | 半透明索引便签 / 文件卡 |
+| 方法论模块 | 档案条 / 手册章节 |
+| Pattern | 索引记录 |
+| 品鉴 / 公司拆解 | dossier 案卷 |
+| Skill | 抽屉里的 recipe / 方法模块 |
+| Preset | 样本册 / swatch archive |
+| Notes | 日期索引笔记 |
+| Changelog | 修订记录 |
+| Pitfall | 金色经验标记 |
+
+## 1.2 禁止方向
+
+- 不做 SaaS dashboard。
+- 不做等宽等高卡片海。
+- 不做蓝白科技公司宣传站。
+- 不用人物主视觉。
+- 不用风景图作为主要页面语义。
+- 不做整页深色模式。
+- 不做玻璃拟态“无处不在”。
+- 不用高饱和亮蓝、紫色霓虹、赛博渐变。
+
+---
+
+# 2. Color Tokens
+
+建议直接替换现有 `src/styles/tokens.css` 的色彩层，同时保留变量式设计。
 
 ```css
 :root {
-  /* 色彩 — 继承 scholar */
-  --ink:          #1a1a1a;
-  --paper:        #fafaf7;
-  --paper-2:      #f3f3ef;   /* 次级底：代码块、iframe 容器、空状态 */
-  --accent:       #2563eb;   /* 仅用于链接、当前导航、pattern status=evolving */
-  --accent-light: #dbeafe;
-  --warm:         #c2410c;   /* 风险、警告、status=concept */
-  --warm-light:   #fff7ed;
-  --green:        #166534;   /* 建议、行动、status=converging */
-  --green-light:  #f0fdf4;
-  --gray-100:     #f3f4f6;
-  --gray-200:     #e5e7eb;
-  --gray-300:     #d1d5db;
-  --gray-500:     #6b7280;
-  --gray-700:     #374151;
-  --border:       #d1d5db;
+  /* Foundation */
+  --paper:        #F6F2E9;
+  --paper-2:      #EEE8DD;
+  --paper-3:      #E5DED1;
+  --paper-white:  #FCFAF6;
 
-  /* 字体 */
-  --font-display: "Noto Serif SC", "Songti SC", serif;
-  --font-body:    "Inter", -apple-system, "PingFang SC", "Noto Sans SC", sans-serif;
-  --font-mono:    "JetBrains Mono", "SF Mono", Menlo, monospace;
+  /* Ink / primary */
+  --ink:          #113053;
+  --ink-2:        #294C6F;
+  --ink-3:        #5A7187;
 
-  /* 字号 */
-  --fs-h1: 2rem;      /* 页面标题 */
-  --fs-h2: 1.4rem;    /* 区块标题 / 文章 h2 */
-  --fs-h3: 1.05rem;   /* 卡片标题 / 文章 h3 */
-  --fs-body: 0.95rem;
-  --fs-meta: 0.8rem;
-  --fs-tag: 0.7rem;
-  --lh-body: 1.75;
+  /* Blue-gray */
+  --blue:         #3B6287;
+  --blue-soft:    #89A2B8;
+  --blue-wash:    #E6EDF2;
 
-  /* 间距（8 基准） */
-  --sp-1: 0.5rem; --sp-2: 1rem; --sp-3: 1.5rem; --sp-4: 2rem;
-  --sp-6: 3rem;  --sp-8: 4rem;
+  /* Silver */
+  --silver:       #B7C0C8;
+  --silver-dark:  #7C8893;
+  --silver-light: #DCE2E6;
 
-  /* 布局 */
-  --w-prose: 780px;   /* 正文容器 */
-  --w-wide:  1080px;  /* 列表 / 首页 / 带侧栏页面 */
-  --w-side:  220px;   /* ChapterNav 侧栏 */
-  --radius:  4px;     /* 全站统一，不做大圆角 */
+  /* Muted gold — only marker/accent */
+  --gold:         #AC8E56;
+  --gold-soft:    #DCCBA8;
+  --gold-wash:    #F1E9D9;
+
+  /* Text neutrals */
+  --text:         #252C32;
+  --text-2:       #5C6670;
+  --text-3:       #879099;
+
+  /* Lines */
+  --line:         rgba(17, 48, 83, .16);
+  --line-soft:    rgba(17, 48, 83, .08);
+
+  /* Glass */
+  --glass-bg:     rgba(247, 249, 250, .56);
+  --glass-bg-hi:  rgba(255, 255, 255, .72);
+  --glass-border: rgba(255, 255, 255, .72);
+  --glass-shadow: 0 18px 45px rgba(25, 42, 58, .10);
+
+  /* Semantic aliases — map old component API to new theme */
+  --accent:       var(--blue);
+  --accent-light: var(--blue-wash);
+  --warm:         var(--gold);
+  --warm-light:   var(--gold-wash);
+  --green:        #526E63;
+  --green-light:  #E8EEEA;
+  --border:       var(--line);
 }
 ```
 
-断点：`sm ≤ 640px`、`md ≤ 900px`、`lg > 900px`。侧栏在 `md` 及以下折叠为顶部横向目录。
+## 2.1 色彩占比
 
-## 3. 全局骨架
+- 65–72%：paper / warm neutral
+- 18–24%：ink / blue-gray
+- 6–10%：silver / glass
+- ≤ 3%：gold
 
-### 3.1 Header（`SiteHeader`）
-- 高度 56px，底部 1px `--border`，背景 `--paper`，sticky
-- 左：站点标识 `lucyli-lpl`，`--font-mono` 500 weight，`--fs-body`；不用 logo 图
-- 中：6 项导航，`--font-body` 500，当前项下划线 2px `--ink`（不用颜色高亮）；`sm` 折叠为汉堡菜单
-- 右：搜索入口（图标 + "搜索" 文本，`sm` 只显示图标）、GitHub 图标链接
-- 搜索点击后弹出全宽搜索层（Pagefind 默认 UI 即可，覆盖样式到 tokens）
+Gold 只用于：
+- 当前页小圆点
+- section number
+- revision marker
+- pitfall marker
+- 极少量分割线 / clip / paper fastener
 
-### 3.2 Footer（`SiteFooter`）
-- 上方 1px `--border`，`--fs-meta` `--gray-500`
-- 左：`© 2026 lucyli-lpl · 内容以 CC BY-NC-SA 4.0 共享`（文案由作者确认）
-- 右：GitHub · 飞书 · RSS 三个文字链接
-- 不放站点地图、不放多列
+---
 
-### 3.3 容器
-- `Container.prose`：max-width `--w-prose`，用于文章正文
-- `Container.wide`：max-width `--w-wide`，用于列表、首页、带侧栏页
-- `Layout.sidebar`：`wide` 内两栏，主栏 + `--w-side` 右侧栏，gap `--sp-6`
+# 3. Typography
 
-### 3.4 面包屑（`Breadcrumb`）
-- `--font-mono` `--fs-meta` `--gray-500`，分隔符 `/`，最后一级不可点击
-- 二级及以下页面显示，紧贴页首上方
+```css
+--font-display: "Noto Serif SC", "Songti SC", serif;
+--font-body: "Inter", "PingFang SC", "Noto Sans SC", sans-serif;
+--font-mono: "JetBrains Mono", "SF Mono", monospace;
+--font-hand: "Caveat", "Kaiti SC", cursive; /* decorative only */
+```
 
-## 4. 组件清单
+## 3.1 类型角色
 
-每个组件给出：用途、结构、状态、响应式。数据字段名见括号。
+- `display`：H1/H2、核心文章标题。
+- `body`：正文、卡片说明、导航。
+- `mono`：版本、日期、slug、meta、编号。
+- `hand`：装饰性英文旁注，一页最多 1–2 处，不承载必要信息。
 
-### 4.1 `PageHeader`
-页面顶部标识区，所有页面复用。
-- 结构：Kicker（`--font-mono` `--fs-meta` 大写字母间距 0.08em，例如 `PATTERN · EVOLVING`）→ h1（`--font-display` 700）→ 副标题（`--font-body` `--gray-700`，可选）→ MetaRow（一行元数据，`--font-mono` `--fs-meta`，项目间用 `·` 分隔）
-- 下方 `--sp-4` 留白，无分隔线
+## 3.2 推荐字号
 
-### 4.2 `Tag`
-- 内联小标签，`--font-mono` `--fs-tag`，1px 边框 `--gray-300`，padding 2px 8px，`--radius`
-- 变体：`neutral`（默认）、`status`（见 §4.3 色映射）、`type`（用于"最近更新"里的 collection 类型，纯文字 + 左侧 4px 方块色标）
-- 可点击时 hover 边框变 `--ink`
+```css
+--fs-display: clamp(2.6rem, 5.1vw, 5.2rem);
+--fs-h1: clamp(2rem, 3.2vw, 3.5rem);
+--fs-h2: clamp(1.55rem, 2vw, 2.2rem);
+--fs-h3: 1.15rem;
+--fs-body: 0.98rem;
+--fs-small: 0.86rem;
+--fs-meta: 0.76rem;
+```
 
-### 4.3 `StatusBadge`
-pattern 状态专用，四个值固定映射，不可新增颜色：
+长文正文建议 `line-height: 1.86`，中文每行 30–42 字附近。
 
-| status | 文字 | 前景 / 背景 |
-|---|---|---|
-| concept | 概念期 | `--warm` / `--warm-light` |
-| landed | 已落地 | `--ink` / `--gray-100` |
-| evolving | 进化中 | `--accent` / `--accent-light` |
-| converging | 趋同期 | `--green` / `--green-light` |
+---
 
-### 4.4 `Card`
-无阴影、1px `--border`、padding `--sp-3`、`--radius`；整卡可点击时 hover 边框 `--ink`。
-变体：
-- `Card.module`（方法论模块）：编号（`--font-mono`，如 `01`）、模块名（`--font-display` 600）、一句话、底部 MetaRow（`N 章 · N 个关联 skill · 更新 YYYY-MM-DD`）
-- `Card.pattern`（列表用行式，非卡片）：见 §4.9 `ListRow`
-- `Card.case`（品鉴 / 公司拆解）：产品名 + 公司（`--font-display` 600）、一句话结论（斜体不要，用 `--gray-700`）、Tag 行（涉及 pattern）、MetaRow（发布 / 分析日期）
-- `Card.skill`（SkillCard）：名称（`--font-mono` 600）、一句话、MetaRow（来源仓库 · 所属模块）、底部小字"站内产出 N 条"
-- `Card.preset`（PresetCard）：顶部预览图（16:10，`object-fit: cover`，1px 边框）、名称 + 中文名、一句话、Tag 行
-- `Card.note`：标题（`--font-display` 600）、日期、摘要两行截断
+# 4. Spacing / Layout
 
-### 4.5 `Callout`
-文章内语义块，与 scholar 一致：左侧 3px 色条 + 浅底。
-- `info`（`--accent` / `--accent-light`）、`warn`（`--warm` / `--warm-light`）、`action`（`--green` / `--green-light`）
-- 标题行可选，`--font-body` 600
-- 由 markdown 中的 `> [!info]` 等语法生成（技术侧处理）
+```css
+--space-1: .5rem;
+--space-2: 1rem;
+--space-3: 1.5rem;
+--space-4: 2rem;
+--space-5: 3rem;
+--space-6: 4.5rem;
+--space-7: 7rem;
 
-### 4.6 `Verdict`
-结论卡：背景 `--ink`，文字 `--paper`，`--font-display` 600，padding `--sp-4`。全站唯一深色块；一页最多一个。用于品鉴页首的一句话结论、方法论模块页的核心命题。
+--w-prose: 760px;
+--w-wide: 1180px;
+--w-hero: 1320px;
+--w-side: 220px;
+```
 
-### 4.7 `Timeline`
-纵向时间线，用于方法论迭代记录、pattern Evolution Log。
-- 左轴 1px `--gray-200`，节点 8px 实心圆 `--ink`
-- 每节点：日期 / 版本（`--font-mono` `--fs-meta`）、driver 或类型 Tag（可选）、标题（`--font-body` 600）、正文、影响模块 Tag 行（可选）
-- 节点间距 `--sp-4`
+原则：
+- 首页可宽，文章必须窄。
+- “内容密度”通过折叠与空白控制，而不是缩字号。
+- section 不要求同高、同宽；刻意制造视觉优先级。
 
-### 4.8 `ChapterNav`
-文章目录侧栏。
-- `lg`：右侧 sticky，top 80px，`--fs-meta`，当前章节左侧 2px `--ink` 指示；二级条目缩进 `--sp-2`
-- `md` 及以下：折叠为正文顶部一个可展开的"目录"块，展开后为纵向列表
-- 使用原生 IntersectionObserver 高亮当前章节，允许 JS
+---
 
-### 4.9 `ListRow`
-pattern 列表用的行式布局（不用卡片）。
-- 一行：pattern 英文名（`--font-body` 600）+ 中文名（`--gray-500`）| StatusBadge | heat（用 `●●●●○` 五格，`--font-mono`）| first_seen | 产品数 | Tag 行（`sm` 隐藏）
-- 行之间 1px `--gray-200`，hover 整行底色 `--paper-2`
-- 顶部一行过滤 Tag（全部 / 四个 status），纯前端切换，允许 JS
+# 5. Material System
 
-### 4.10 `Prose`
-markdown 正文样式，全站文章页共用。规则继承 scholar：
-- h2 `--font-display` 700 + 底部 1px 边框；h3 `--font-body` 600
-- 正文 `--fs-body` / `--lh-body`；段间距 `--sp-2`
-- 表格：`thead` 底 `--gray-100`，边框 `--border`，`sm` 下容器横向滚动
-- 代码：行内 `--font-mono` 底 `--gray-100`；块级 `--paper-2` 底，无高亮主题的强色
-- 链接：`--accent`，下划线 1px 偏移 3px；站内 pattern 链接额外用 `--font-mono` 呈现
-- 图片 / SVG：宽度 100%，可选 `figcaption` `--fs-meta` `--gray-500`
-- 引用块：左 3px `--gray-300`，`--gray-700`
+## 5.1 Paper
 
-### 4.11 `EmptyState`
-空 collection 或空分组：`--paper-2` 底，padding `--sp-6`，居中，`--font-display` 600 一句标题（如"公司拆解 · 筹备中"）+ 一行说明（`--gray-500`）。不放插图。
+用于：正文、页面底、长内容。
 
-### 4.12 `UpdateFeed`
-首页最近更新流。每条一行：type Tag（§4.2）| 标题 | 日期（右对齐 `--font-mono`）。8 条，行间 1px `--gray-200`。
+```css
+.paper {
+  background: var(--paper);
+  color: var(--text);
+}
+```
 
-### 4.13 `InstallBlock`
-skill 页安装说明，两个 Tab（Claude 桌面 / 网页 · Claude Code），Tab 用下划线切换，内容为代码块。允许 JS 切换；无 JS 时两段全部展示。
+允许叠加 1–2% 透明度的噪点纹理，但不要明显仿旧。
 
-### 4.14 `PreviewFrame`
-视觉库 preset 预览：`--paper-2` 底容器，内嵌 iframe（宽 100%，高 640px，`sm` 480px），右上角"新窗口打开"文字链接。
+## 5.2 Glass
 
-## 5. 页面线框
+用于：Hero 便签、导航、drawer、小型 metadata 容器。
 
-按区块自上而下描述。所有页面 = `SiteHeader` + 内容 + `SiteFooter`。
+```css
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px) saturate(.85);
+  -webkit-backdrop-filter: blur(18px) saturate(.85);
+  box-shadow: var(--glass-shadow);
+}
+```
 
-### 5.1 首页 `/`（`Container.wide`）
-1. Hero：左对齐。`--font-mono` kicker `AI PM · 方法论 / 观察 / 工具`，h1 站点标识或一句话定位（`--font-display`，2.4rem 允许超出 h1 token），一段 2 行说明，两个按钮（主：黑底白字"读方法论"；次：边框"看观察"）。右侧留空，不放图。
-2. 方法论概览：区块标题 h2 "方法论" + 右侧"全部 →"；`Card.module` 三列网格（`md` 两列，`sm` 一列），最多 6 张。
-3. 最近更新：h2 "最近更新"；`UpdateFeed`。
-4. 工具箱速览：h2 "工具箱"；`Card.skill` 横向一行（`sm` 纵向），最多 4 张，"全部 →"。
-5. 底部一行：`视觉库 N 个 preset · 笔记 N 篇`，文字链接，`--fs-meta`。
+限制：
+- 一个 viewport 同时最多 5–6 个 glass surface。
+- 文章正文、长列表行不使用 glass。
+- 不做亮白发光边缘。
 
-### 5.2 方法论列表 `/methodology/`（`Container.wide`）
-1. `PageHeader`：kicker `METHODOLOGY · v2.1`，h1 "AI 应用能力边界方法论"，副标题 = 一句话内核，MetaRow（模块数 · 最近更新 · GitHub 链接）
-2. `Verdict`：核心命题（"能力三区不是难度分级，而是三种产品承诺"）
-3. "从哪读起"：一张两列表，`Prose` 样式
-4. 模块列表：`Card.module` 两列网格（`sm` 一列），按编号排列
-5. 迭代记录入口：一行 `Card` 变体——左"迭代记录 v1 → v2.1"，右"N 个版本 · 最近 YYYY-MM"，整卡可点
+## 5.3 Metal / Silver
 
-### 5.3 方法论模块页 `/methodology/[module]/`（`Layout.sidebar`）
-主栏：
-1. `Breadcrumb`：方法论 / 模块名
-2. `PageHeader`：kicker `MODULE 03`，h1 模块名，副标题一句话，MetaRow（章节数 · 所属版本）
-3. 模块示意图：SVG，宽度 100%，下方 figcaption
-4. `Prose` 正文（各章节顺序拼接，章节 h2 带编号锚点）
-5. 底部：上一模块 / 下一模块 两个链接，左右分布
-侧栏（sticky）：
-- `ChapterNav`
-- "关联 skill"：Tag 列表（`--font-mono`）
-- "被引用于"：品鉴 / pattern 标题列表（反链，为空时不显示该区）
+不要用银色填满背景。
 
-### 5.4 迭代记录 `/methodology/changelog/`（`Container.prose`）
-1. `Breadcrumb`
-2. `PageHeader`：h1 "迭代记录"，副标题 "v1 → v2.1，每一步校正都有据可查"
-3. `Timeline`：每节点版本号 + 日期 + 变更摘要 + 影响模块 Tag
+体现方式：
+- 1px 细边框
+- 图标 stroke
+- paper clip / binder / divider
+- drawer edge
+- 输入框边缘
 
-### 5.5 观察分组页 `/observations/`（`Container.wide`）
-三个区块纵向排列，每块：h2（collection 名 + 右侧计数 + "全部 →"）、一句说明、最新 3 条（pattern 用 `ListRow`，品鉴 / 拆解用 `Card.case` 三列）。空 collection 用 `EmptyState`。
+## 5.4 Gold
 
-### 5.6 pattern 列表 `/patterns/`（`Container.wide`）
-1. `Breadcrumb`
-2. `PageHeader`：kicker `PATTERNS`，h1 "AI 设计模式追踪"，副标题定位句，MetaRow（N 个 pattern · 最后扫描 YYYY-MM-DD · GitHub）
-3. 过滤 Tag 行
-4. `ListRow` 列表
+不是奢华风主色，而是“编辑标记色”。
 
-### 5.7 pattern 详情 `/patterns/[slug]/`（`Layout.sidebar`）
-主栏：
-1. `Breadcrumb`
-2. `PageHeader`：kicker `PATTERN · {status}`，h1 `{pattern_name}`，副标题 `{chinese_name}`，MetaRow（heat ●●●●○ · first seen · originated by），Tag 行（tags），"关联模式"一行链接
-3. `Prose` 正文；其中 Evolution Log 段改用 `Timeline` 渲染
-4. 底部"被提到的品鉴"（反链列表，`Card.case` 或简单链接列表）
-侧栏：`ChapterNav`（Definition / Implementations / Evolution Log / PM Notes 四段）
+使用元素：
+- `01 / 02 / 03`
+- changelog current version
+- pitfall
+- active dot
+- selected tab underbar
 
-### 5.8 品鉴列表 `/tastings/`（`Container.wide`）
-1. `Breadcrumb`
-2. `PageHeader`：kicker `TASTINGS`，h1 "AI 产品品鉴"，副标题一句，MetaRow（N 篇 · 框架：ai-product-tasting → 链接）
-3. `Card.case` 两列网格（`sm` 一列）
+---
 
-### 5.9 品鉴详情 `/tastings/[slug]/`（`Layout.sidebar`）
-主栏：
-1. `Breadcrumb`
-2. `PageHeader`：kicker `TASTING · {company}`，h1 `{product}`，MetaRow（产品发布 · 分析日期 · 框架 vX）
-3. `Verdict`：一句话结论
-4. `Prose` 正文，章节 h2 带编号
-5. 底部：涉及 pattern Tag 行 + "使用的框架"链接
-侧栏：`ChapterNav`（章节列表，固定显示）
+# 6. Global Components
 
-`/anatomies/` 列表与详情同 5.8 / 5.9，kicker 改 `ANATOMY`。
+## 6.1 `SiteHeader`
 
-### 5.10 工具箱 `/skills/`（`Container.wide`）
-1. `PageHeader`：kicker `SKILLS`，h1 "工具箱"，副标题"可安装到 Claude 的 skill，每个都在站内有对应产出"
-2. `Card.skill` 两列网格
+Desktop：
+- 高 64px
+- sticky top 0
+- `background: rgba(246,242,233,.78)` + blur 12–16px
+- 左 logo / 中导航 / 右搜索
+- 当前导航：墨蓝文字 + 1 个 4px gold dot 或 2px underline（二选一，不同时使用）
+- “工具箱”用户文案改为“技能箱”
 
-### 5.11 skill 详情 `/skills/[slug]/`（`Container.prose`）
-1. `Breadcrumb`
-2. `PageHeader`：kicker `SKILL · {repo}`，h1 名称（`--font-mono` 700，这一页例外不用衬线），MetaRow（所属模块 · GitHub 直达 SKILL.md）
-3. `InstallBlock`
-4. h2 "这个 skill 做什么" → `Prose`（SKILL.md 正文）
-5. h2 "站内产出" → 链接列表（为空则不显示）
+Scroll：
+- 首屏 0–40px：背景更透明
+- 向下后增加 blur 与 bottom border
 
-### 5.12 视觉库 `/presets/`（`Container.wide`）
-1. `PageHeader`：kicker `VISUAL LIBRARY`，h1 "视觉库"，副标题"按输出类型组织的视觉风格 preset，供 skill 生成 HTML 时加载"
-2. 每个输出类型一个区块：h2 类型名（`--font-mono`）+ 一行硬约束摘要（来自 `_README.md`，`--gray-500`）；`Card.preset` 三列网格（`md` 两列，`sm` 一列）；空类型 `EmptyState`
+Mobile：
+- logo + search + menu
+- menu 使用 full-width sheet，不用传统小 popover
 
-### 5.13 preset 详情 `/presets/[slug]/`（`Container.prose`）
-1. `Breadcrumb`
-2. `PageHeader`：kicker `PRESET · {output_type}`，h1 `{preset_name}` + 副标题 `{chinese_name}`，MetaRow（origin · GitHub），Tag 行
-3. `PreviewFrame`
-4. `Prose`（TOKENS.md 正文，色板代码块保留）
-5. Callout `info`："如何使用：安装 visual-library skill →"
+## 6.2 `SearchModal`
 
-### 5.14 笔记 `/notes/` 与 `/notes/[slug]/`
-列表：`Container.prose`，`PageHeader` + 纵向 `Card.note` 列表（无网格）。
-详情：`Container.prose`，`Breadcrumb` + `PageHeader`（kicker `NOTE · YYYY-MM-DD`）+ `Prose`；侧栏无。
+定位：检索档案，而不是通用搜索弹窗。
 
-### 5.15 关于 `/about/`（`Container.prose`）
-1. `PageHeader`：h1 "关于"
-2. `Prose` 介绍段
-3. h2 "联系"：飞书二维码图片（最大宽 200px，1px 边框）+ GitHub 链接
-4. h2 "本站由这些仓库构建"：三行（仓库名 `--font-mono` + 一句话 + 链接）
+- max-width 760px
+- 顶部大搜索框
+- Result 按 collection label 显示
+- hover/focus 显示银灰 selection bar
+- `Cmd/Ctrl + K` 保留
 
-### 5.16 搜索层与 404
-- 搜索层：全屏覆盖，`--paper` 底 95% 不透明，顶部输入框（`--font-body` 1.2rem，无边框只有底线），结果列表 = 标题 + collection Tag + 摘要片段
-- 404：`Container.prose`，h1 "没有这一页"，一行说明，返回首页链接
+## 6.3 `SiteFooter`
 
-## 6. 响应式与可访问性
+- 首页：窄幅 88–112px
+- 长文：常规 120–160px
+- 不做多列 sitemap
+- 不放额外图片
 
-- 所有网格在 `sm` 退化为单列；`Layout.sidebar` 在 `md` 退化为单列且 `ChapterNav` 折叠到顶部
-- 表格 `sm` 下容器横向滚动，不折行破坏结构
-- 触控目标 ≥ 40px
-- 颜色对比：正文 `--ink` on `--paper` ≥ 12:1；`--gray-500` 仅用于元数据，不用于正文
-- 所有交互（过滤、Tab、目录高亮）在无 JS 时有可用退化
-- 图片、SVG 必须有 `alt`；iframe 有 `title`
-- 语言标记 `lang="zh-CN"`，英文术语不需单独标记
+---
 
-## 7. 文案约束（写给组件内的固定文案）
+# 7. Interaction Primitives
 
-- 中文表述，英文术语保持原文，不翻译：pattern、skill、preset、token、computer use、shared agent、MCP、LLM、Claude Code 等
-- 不用感叹号，不用"！"，不用 emoji
-- 空状态文案模板：`{collection 名} · 筹备中` / `这个类型还没有 preset`
-- 按钮动词简短：读方法论、看观察、全部、新窗口打开
+## 7.1 `ArchiveNote`
+
+首页一级入口卡。
+
+结构：
+- icon
+- title
+- 2 行说明
+- corner arrow
+
+状态：
+```css
+.archive-note {
+  transform: translate3d(0,0,0);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.archive-note:hover,
+.archive-note:focus-visible {
+  transform: translateY(-6px) rotate(.25deg);
+}
+```
+
+可选 JS：pointermove 实现 X/Y tilt，绝对值 ≤ 2deg。
+
+## 7.2 `AccordionRow`
+
+用于 Methodology / Skill / Retro / Pitfall。
+
+- 原生 `<button>` header
+- `aria-expanded`
+- 内容使用 CSS grid `0fr → 1fr`
+- 动画 260ms
+- 一个列表默认只打开 1 个；允许用户打开多个，但初始不超过 1 个。
+
+## 7.3 `HorizontalRail`
+
+用于 Observations folders / Cases / Presets。
+
+```css
+.rail {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.rail > * { scroll-snap-align: start; }
+```
+
+桌面允许 wheel-to-horizontal 的增强，但不能阻止普通页面纵向滚动。
+
+## 7.4 `PreviewDrawer`
+
+用于 Pattern 快速预览。
+
+Desktop：right drawer 420–520px。  
+Mobile：不弹 drawer，直接进入详情或 full-screen sheet。
+
+必须：
+- Esc close
+- focus trap
+- route link `阅读全文`
+
+## 7.5 Scroll choreography
+
+允许：
+- sticky
+- opacity reveal
+- translateY 8–20px
+- Hero 背景/便签 0.92–0.98 比例轻视差
+
+不允许：
+- 大缩放
+- 360° 旋转
+- 长时间 pin 住页面导致无法正常滚动
+- WebGL 依赖作为核心导航
+
+技术策略：**结果导向，不限定实现手段。** 可以根据效果与复杂度选择 CSS、View Transitions API、Web Animations API、GSAP/ScrollTrigger、Motion One、局部 client island；必要时允许局部 Three.js。
+
+约束：
+- 新依赖必须服务于明确体验目标，不做技术展示。
+- 所有交互均为渐进增强，基础导航与阅读不可依赖动画库或 WebGL。
+- 若 CSS / 原生 API 已能稳定复现，则不为了“技术感”额外引库。
+
+---
+
+# 8. Page Components
+
+## 8.1 `HomeHero`
+
+布局：
+- desktop：左 42–46%，右 54–58%
+- min-height：680px 左右，不强制 100vh
+
+右侧由 `ArchiveNote[]` 组合成“研究板”。
+
+视觉背景应是：
+- 纸张 / 活页夹 / 编辑部桌面 / 书脊 / clip / 笔记
+- 不使用雪山、湖泊、海岸等风景主图
+
+## 8.2 `CurrentFocus`
+
+- 固定最多 3 项
+- 小编号 + icon + question
+- 不需要更新时间
+- 容器可有极弱 glass，但内容行本身是 paper / transparent
+
+## 8.3 `FeaturedEditorial`
+
+1 + 2 布局：
+- 主卡占 60–65%
+- 右侧两个次卡纵向
+- 只支持 3 条
+- image 必须与内容语义相关：图表、纸面、工具、界面、研究材料；不放无意义风景
+
+## 8.4 `ModuleAccordion`
+
+替代原 `CardModule` 网格。
+
+props：
+```ts
+{
+  order,
+  title,
+  oneLiner,
+  chapterCount,
+  skills,
+  updated,
+  href,
+  defaultOpen?
+}
+```
+
+## 8.5 `EvolutionStrip`
+
+替代首页式完整 Matrix 直接暴露。
+
+- compact strip
+- current version highlighted
+- CTA `展开演进`
+- `EvolutionMatrix` 作为展开内容或独立 changelog 页面继续复用
+
+## 8.6 `ObservationFolders`
+
+3 个 folder item，视觉层叠。
+
+focus 规则：
+- current z-index 3
+- next z-index 2
+- last z-index 1
+- transform 只做平移 / 微旋转
+
+## 8.7 `CaseShelf`
+
+- featured case + horizontal compact cases
+- company anatomy 与 tasting 共用
+
+## 8.8 `SkillDrawerList`
+
+替代 `.skill-grid`。
+
+Accordion details：repo / module / outputs / CTA。
+
+## 8.9 `PresetGallery`
+
+- TypeNav vertical
+- PreviewStage large
+- PresetRail horizontal
+- mobile TypeNav 变 horizontal tabs
+
+## 8.10 `NoteTimeline`
+
+- 年 / 月 / 日期 / 标题
+- 摘要默认不展示
+- hover/focus 展开摘要但不改变整体布局高度过大；推荐 absolute popover 或 2 行 reveal
+
+---
+
+# 9. Unified Article System
+
+适用所有详情页。
+
+结构：
+
+```txt
+Breadcrumb (optional)
+ArticleHeader
+MetaStrip
+KeyClaim / Verdict (optional)
+┌───────────────────────┬──────────────┐
+│ Prose                 │ ChapterNav   │
+│                       │ sticky       │
+└───────────────────────┴──────────────┘
+RelatedEntries
+PrevNext
+```
+
+## 9.1 `ArticleHeader`
+
+- kicker / collection + status
+- H1
+- subtitle 0–3 行
+- meta row
+
+## 9.2 `KeyClaim`
+
+- methodology：`KeyClaim` 使用 blue-wash
+- tasting：`Verdict` 使用 solid navy
+- retro：`LearningShift` 使用 paper + gold marker
+
+## 9.3 `ChapterNav`
+
+- lg：sticky top 96px
+- current：2px blue indicator + ink text
+- tablet/mobile：native details 折叠目录
+
+## 9.4 `Prose`
+
+长文优先 paper：
+- 不放 glass background
+- h2 serif
+- h3 body semibold
+- table 容器横向 scroll
+- code mono
+- blockquote 银灰线
+- callout 最多 3 种语义
+
+---
+
+# 10. Motion Tokens
+
+```css
+--ease-standard: cubic-bezier(.2,.8,.2,1);
+--ease-soft: cubic-bezier(.22,.61,.36,1);
+--dur-fast: 160ms;
+--dur-base: 260ms;
+--dur-slow: 420ms;
+```
+
+使用：
+- hover `--dur-fast`
+- accordion/drawer `--dur-base`
+- section reveal `--dur-slow`
+
+`prefers-reduced-motion`：
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+```
+
+---
+
+# 11. Responsive System
+
+## ≥ 1180
+- wide 1180–1320
+- sticky side nav
+- hero note board full interaction
+
+## 768–1179
+- wide padding 32px
+- hero still 2 columns where possible
+- Article nav collapses
+- drawers max 46vw
+
+## < 768
+- padding 20px
+- H1 max 2.4rem
+- hero stack
+- notes / folders / presets use horizontal rail
+- no tilt / parallax
+- drawer → full-screen sheet or route
+
+---
+
+# 12. Existing Components Migration Map
+
+| 当前组件 | v2 去向 |
+|---|---|
+| `SiteHeader` | 保留，改材质与 active state |
+| `SiteFooter` | 保留，首页使用 compact 变体 |
+| `SearchModal` | 保留 Pagefind，重构为 Archive Search |
+| `PageHeader` | 演进为 `ArticleHeader` / `SectionIntro` |
+| `CardModule` | 替换为 `ModuleAccordion` |
+| `EvolutionMatrix` | 保留，但移入渐进披露 |
+| `EvolutionStrip` | 升级为主入口 |
+| `ListRow` | Pattern 列表继续使用 |
+| `ChapterNav` | 保留，重做响应式折叠 |
+| `Verdict` | 保留，仅 tasting/关键结论使用 |
+| `Timeline` | 保留，用于 changelog / evolution |
+| `Tag` / `StatusBadge` | 保留，换 tokens |
+| `EmptyState` | 改文案与档案式视觉 |
+
+---
+
+# 13. CSS Architecture
+
+建议文件：
+
+```txt
+src/styles/
+  tokens.css
+  global.css
+  prose.css
+  materials.css      # paper / glass / metal
+  motion.css         # reduced-motion / transitions
+  interactions.css   # accordion / rail / drawer
+```
+
+原则：
+- 组件 CSS 优先使用 token。
+- 禁止组件直接写新的 hex 色值。
+- `backdrop-filter` 必须提供无 blur fallback。
+- 页面级 CSS 只负责 composition，不复制组件样式。
+
+---
+
+# 14. Interaction Engineering
+
+站点继续坚持**静态内容优先 + 局部交互增强**，但本轮不设死板的 JS 行数或库限制。
+
+允许：
+- Search modal
+- accordion / drawer / sheet state
+- ChapterNav IntersectionObserver
+- pointer tilt / depth
+- View Transitions API
+- scroll-driven animation
+- GSAP / Motion One 等局部动画库
+- 局部 client island
+- 仅在确有空间叙事价值时使用局部 Three.js
+
+工程目标：
+- 不把全站改造成 SPA
+- 不因视觉改版引入无意义的全站 hydration
+- 每页仅加载需要的交互代码
+- 动画失败时页面仍完整可用
+- 视觉保真优先于“技术栈纯洁度”，但可维护性优先于炫技
+
+---
+
+# 15. Image / Asset Rules
+
+图片必须与知识内容语义相关：
+
+允许：
+- 工作台 / 资料 / 手写草图
+- UI 局部截图
+- 抽象图表
+- 书籍 / 笔记 / 工具
+- 内容生成的 diagram / preview
+
+避免：
+- 与文章无关的风景占位图
+- 商务握手 / 团队会议 stock photo
+- 人物肖像主视觉
+- 纯装饰 3D 球体
+
+`FeaturedEditorial` 图片如果无合适素材，宁可使用排版式图形 / diagram，而不是随机摄影。
+
+---
+
+# 16. Acceptance Checklist
+
+- [ ] 视觉第一印象是“研究档案 / 编辑部”，不是公司官网。
+- [ ] 暖白比冷白多，蓝灰比亮蓝多。
+- [ ] Silver 是材质，不是大背景。
+- [ ] Gold ≤ 3% 视觉面积。
+- [ ] 首页只有 3 个主要层级：Hero / Combined Content / Compact Footer。
+- [ ] 不出现 6+ 等权卡片首屏。
+- [ ] 至少方法论、技能箱、复盘使用 accordion。
+- [ ] 至少观察、案例、视觉库使用 horizontal rail / scroll-snap。
+- [ ] 长文页面统一 Article System。
+- [ ] 所有交互支持 keyboard + reduced motion。
+- [ ] 所有用户可见“工具箱”改成“技能箱”。
+
+
+
+# 16. Motion Priority Levels
+
+为了给实现模型足够发挥空间，同时避免风格失控，所有交互分三级：
+
+## Core — 必须实现
+- Accordion / drawer / sticky index / scroll-snap
+- 清晰 hover + focus 状态
+- 移动端等价交互
+- `prefers-reduced-motion`
+- 页面切换不可有明显闪烁、跳变或布局抖动
+
+## Delight — 应实现
+- 首页便签轻微 lift / tilt / depth
+- 档案卡片从层叠态进入前景
+- Methodology 展开具“抽出 dossier”感
+- Observations folder 在选择时重排而非单纯替换
+- Preset 像样本册一样可横向翻阅
+- section transition 使用纸张、索引、资料层的语言，而非统一 fade-up
+
+## Experimental — 可由实现模型发挥
+- shared-element-like page transitions
+- 研究板多层轻视差
+- 可拖动的样本册
+- 局部 3D perspective / Three.js 档案空间
+
+Experimental 必须可以关闭、降级或删除；任何实验效果若降低可读性、性能或导航确定性，直接回退。

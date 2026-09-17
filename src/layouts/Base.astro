@@ -1,9 +1,12 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SearchModal from '../components/SearchModal.astro';
 import '../styles/tokens.css';
 import '../styles/global.css';
+import '../styles/materials.css';
+import '../styles/motion.css';
 import '../styles/prose.css';
 
 import { siteTitle } from '../../site.config';
@@ -11,11 +14,13 @@ import { siteTitle } from '../../site.config';
 interface Props {
   title?: string;
   description?: string;
+  /** 首页用 compact footer */
+  footer?: 'default' | 'compact';
 }
 
-const { title, description } = Astro.props;
+const { title, description, footer = 'default' } = Astro.props;
 const pageTitle = title ? `${title} — ${siteTitle}` : siteTitle;
-const pageDescription = description || 'AI PM 的方法论、观察与工具箱';
+const pageDescription = description || 'AI PM 的方法论、观察与技能箱';
 ---
 
 <!DOCTYPE html>
@@ -25,15 +30,35 @@ const pageDescription = description || 'AI PM 的方法论、观察与工具箱'
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{pageTitle}</title>
   <meta name="description" content={pageDescription} />
+  <meta name="theme-color" content="#F6F2E9" />
   <link rel="alternate" type="application/rss+xml" title={siteTitle} href="/rss.xml" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preload" as="image" href="/img/paper-texture.webp" />
+  <ClientRouter />
+  <script is:inline>document.documentElement.classList.add('js');</script>
 </head>
 <body>
   <SiteHeader />
   <main data-pagefind-body>
     <slot />
   </main>
-  <SiteFooter />
+  <SiteFooter variant={footer} />
   <SearchModal />
+  <script>
+    // section reveal：进入视口加 .is-in；ClientRouter 换页后重新绑定
+    function bindReveal() {
+      const els = document.querySelectorAll<HTMLElement>('.reveal:not(.is-in)');
+      if (!els.length) return;
+      if (!('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('is-in')); return; }
+      const io = new IntersectionObserver((entries) => {
+        for (const en of entries) {
+          if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
+        }
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+      els.forEach(e => io.observe(e));
+    }
+    bindReveal();
+    document.addEventListener('astro:page-load', bindReveal);
+  </script>
 </body>
 </html>
