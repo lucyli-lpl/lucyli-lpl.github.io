@@ -8,7 +8,8 @@
     "build": "astro build && npx pagefind --site dist",
     "preview": "astro preview",
     "sync": "bash scripts/sync-content.sh",
-    "images": "node scripts/build-images.mjs"
+    "images": "node scripts/build-images.mjs",
+    "validate": "node scripts/validate-content.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.0",

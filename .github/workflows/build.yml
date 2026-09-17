@@ -25,6 +25,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm approve-builds esbuild sharp 2>/dev/null || true
       - run: bash scripts/sync-content.sh
+      - name: Validate content format
+        run: pnpm validate
       - run: pnpm build
       - uses: actions/upload-pages-artifact@v3
         with:
