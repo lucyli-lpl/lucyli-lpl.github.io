@@ -1,0 +1,76 @@
+---
+/**
+ * 栏目索引页头：编号感 kicker / 大标题 / 副题 / meta / 可选手写旁注。
+ */
+interface Props {
+  kicker?: string;
+  title: string;
+  subtitle?: string;
+  meta?: string[];
+  hand?: string;
+}
+
+const { kicker, title, subtitle, meta = [], hand } = Astro.props;
+const metaItems = meta.filter(Boolean);
+---
+
+<header class="section-intro">
+  <div class="intro-main">
+    {kicker && <p class="section-num">{kicker}</p>}
+    <h1 class="intro-title">{title}</h1>
+    {subtitle && <p class="intro-subtitle">{subtitle}</p>}
+    {metaItems.length > 0 && (
+      <p class="intro-meta">{metaItems.join(' · ')}</p>
+    )}
+  </div>
+  {hand && <span class="hand intro-hand" aria-hidden="true">{hand}</span>}
+</header>
+
+<style>
+  .section-intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding: var(--sp-5) 0 var(--sp-3);
+    margin-bottom: var(--sp-4);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .section-num {
+    margin-bottom: var(--sp-1);
+  }
+
+  .intro-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-display);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: var(--sp-2);
+  }
+
+  .intro-subtitle {
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--text-2);
+    max-width: 56ch;
+  }
+
+  .intro-meta {
+    margin-top: var(--sp-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--text-3);
+  }
+
+  .intro-hand {
+    flex-shrink: 0;
+    padding-bottom: var(--sp-1);
+  }
+
+  @media (max-width: 767px) {
+    .section-intro { padding-top: var(--sp-3); }
+    .intro-hand { display: none; }
+  }
+</style>

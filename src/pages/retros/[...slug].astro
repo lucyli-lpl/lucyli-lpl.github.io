@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ChapterNav from '../../components/ChapterNav.astro';
 import Tag from '../../components/Tag.astro';
@@ -42,7 +42,7 @@ const isPitfallChapter = (slug: string) => /pitfall|坑/i.test(slug);
         { label: title },
       ]} />
 
-      <PageHeader
+      <ArticleHeader
         kicker={`RETRO${project ? ` · ${project}` : ''}`}
         title={title}
         meta={[
@@ -54,9 +54,10 @@ const isPitfallChapter = (slug: string) => /pitfall|坑/i.test(slug);
       />
 
       {summary && (
-        <div class="retro-lead">
+        <aside class="key-claim key-claim--gold retro-lead">
+          <span class="section-num">LEARNING SHIFT</span>
           <Fragment set:html={summary.split('\n\n').map(p => `<p>${p}</p>`).join('')} />
-        </div>
+        </aside>
       )}
 
       {(linkedModules.length > 0 || produced_version) && (
@@ -126,12 +127,22 @@ const isPitfallChapter = (slug: string) => /pitfall|坑/i.test(slug);
 
 <style>
   .retro-lead {
-    font-size: 1.05rem;
-    line-height: var(--lh-body);
-    color: var(--gray-700);
-    border-left: 3px solid var(--ink);
-    padding-left: var(--sp-2);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--radius-lg);
+    background: var(--paper-white);
+    border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--gold);
     margin-bottom: var(--sp-3);
+  }
+
+  .retro-lead .section-num { display: block; margin-bottom: var(--sp-1); }
+
+  .retro-lead :global(p) {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--ink);
   }
 
   .retro-lead :global(p + p) { margin-top: 0.5em; }

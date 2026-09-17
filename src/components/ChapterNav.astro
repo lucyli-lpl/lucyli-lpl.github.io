@@ -1,4 +1,8 @@
 ---
+/**
+ * 章节目录：桌面 sticky（top 96px），当前项 2px 蓝色指示；
+ * 平板/移动端折叠为原生 <details>。
+ */
 interface Heading {
   slug: string;
   text: string;
@@ -7,13 +11,14 @@ interface Heading {
 
 interface Props {
   headings: Heading[];
+  title?: string;
 }
 
-const { headings } = Astro.props;
+const { headings, title = '目录' } = Astro.props;
 ---
 
-<nav class="chapter-nav" aria-label="章节目录">
-  <p class="chapter-nav-title">目录</p>
+<details class="chapter-nav" data-chapter-nav open>
+  <summary class="chapter-nav-title">{title}</summary>
   <ul>
     {headings.map(h => (
       <li class:list={[{ sub: h.depth > 2 }]}>
@@ -21,25 +26,60 @@ const { headings } = Astro.props;
       </li>
     ))}
   </ul>
-</nav>
+</details>
+
+<script>
+  function initChapterNav() {
+    const nav = document.querySelector<HTMLDetailsElement>('[data-chapter-nav]:not([data-bound])');
+    if (!nav) return;
+    nav.dataset.bound = '1';
+
+    // 小屏默认收起
+    const mq = matchMedia('(max-width: 900px)');
+    const sync = () => { nav.open = !mq.matches; };
+    sync();
+    mq.addEventListener('change', sync);
+
+    const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a'));
+    const targets = links
+      .map(a => document.getElementById(a.getAttribute('href')?.slice(1) ?? ''))
+      .filter((el): el is HTMLElement => !!el);
+    if (!targets.length) return;
+
+    const io = new IntersectionObserver((entries) => {
+      for (const en of entries) {
+        if (!en.isIntersecting) continue;
+        nav.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+        nav.querySelector(`a[href="#${en.target.id}"]`)?.parentElement?.classList.add('active');
+      }
+    }, { rootMargin: '-96px 0px -60% 0px' });
+    targets.forEach(t => io.observe(t));
+  }
+  initChapterNav();
+  document.addEventListener('astro:page-load', initChapterNav);
+</script>
 
 <style>
   .chapter-nav {
     position: sticky;
-    top: 80px;
+    top: 96px;
     font-size: var(--fs-meta);
-    max-height: calc(100vh - 100px);
+    max-height: calc(100vh - 120px);
     overflow-y: auto;
   }
 
   .chapter-nav-title {
     font-family: var(--font-mono);
-    font-weight: 500;
-    color: var(--gray-500);
+    font-size: var(--fs-meta);
+    color: var(--text-3);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: .08em;
     margin-bottom: var(--sp-1);
+    list-style: none;
+    cursor: default;
   }
+
+  .chapter-nav-title::-webkit-details-marker { display: none; }
 
   ul {
     list-style: none;
@@ -47,22 +87,21 @@ const { headings } = Astro.props;
   }
 
   li {
-    border-left: 2px solid transparent;
-    padding: 0.25em 0 0.25em 0.75em;
+    border-left: 2px solid var(--line-soft);
+    padding: .3em 0 .3em .75em;
   }
 
   li.sub {
-    padding-left: calc(0.75em + var(--sp-2));
+    padding-left: calc(.75em + var(--sp-2));
   }
 
   li.active {
-    border-left-color: var(--ink);
+    border-left-color: var(--blue);
   }
 
   a {
-    color: var(--gray-500);
-    text-decoration: none;
-    transition: color 0.1s;
+    color: var(--text-3);
+    transition: color var(--dur-fast);
   }
 
   a:hover, li.active a {
@@ -72,33 +111,21 @@ const { headings } = Astro.props;
   @media (max-width: 900px) {
     .chapter-nav {
       position: static;
-      border: 1px solid var(--gray-200);
+      max-height: none;
+      border: 1px solid var(--line-soft);
       border-radius: var(--radius);
       padding: var(--sp-2);
-      margin-bottom: var(--sp-4);
+      margin-bottom: var(--sp-3);
+      background: var(--paper-white);
     }
+    .chapter-nav-title {
+      cursor: pointer;
+      margin-bottom: 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .chapter-nav-title::after { content: '+'; color: var(--gold); }
+    .chapter-nav[open] .chapter-nav-title::after { content: '−'; }
+    .chapter-nav[open] .chapter-nav-title { margin-bottom: var(--sp-1); }
   }
 </style>
-
-<script>
-  const nav = document.querySelector('.chapter-nav');
-  if (nav) {
-    const links = nav.querySelectorAll('a');
-    const headings = Array.from(links).map(a => {
-      const id = a.getAttribute('href')?.slice(1);
-      return id ? document.getElementById(id) : null;
-    }).filter(Boolean);
-
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          nav.querySelectorAll('li').forEach(li => li.classList.remove('active'));
-          const link = nav.querySelector(`a[href="#${entry.target.id}"]`);
-          link?.parentElement?.classList.add('active');
-        }
-      }
-    }, { rootMargin: '-80px 0px -60% 0px' });
-
-    headings.forEach(h => { if (h) observer.observe(h); });
-  }
-</script>

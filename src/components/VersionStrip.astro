@@ -1,0 +1,93 @@
+---
+/**
+ * 紧凑版本条：v1 → … → 当前版本，当前用金色标记；点击跳 changelog 锚点。
+ */
+import { TRIGGER_META, type ChangelogEntry } from '../lib/changelog';
+
+interface Props { entries: ChangelogEntry[] }
+const { entries } = Astro.props;
+const last = entries.length - 1;
+---
+
+{entries.length > 0 && (
+  <ol class="vstrip" aria-label="版本演进">
+    {entries.map((e, i) => (
+      <li class:list={['vnode', { current: i === last }]}>
+        <a href={`/methodology/changelog/#v${e.version}`} class="vlink" title={`${TRIGGER_META[e.trigger].label}：${e.summary}`}>
+          <span class={`vdot vdot--${e.trigger}`} aria-hidden="true" />
+          <span class="vlabel">v{e.version}</span>
+        </a>
+      </li>
+    ))}
+  </ol>
+)}
+
+<style>
+  .vstrip {
+    list-style: none;
+    padding: var(--sp-2) 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .vstrip::-webkit-scrollbar { display: none; }
+
+  .vnode {
+    position: relative;
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+  }
+
+  /* 连接线 */
+  .vnode:not(:last-child)::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    min-width: 18px;
+    background: var(--silver-light);
+    margin: 0 4px;
+  }
+
+  .vlink {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    transition: color var(--dur-fast);
+  }
+
+  .vlink:hover { color: var(--ink); }
+
+  .vdot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--paper-white);
+    border: 2px solid var(--silver);
+    box-sizing: border-box;
+  }
+
+  .vdot--project    { border-color: var(--gold); }
+  .vdot--reading    { border-color: var(--blue); }
+  .vdot--discussion { border-color: var(--green); }
+
+  .vnode.current .vdot {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px var(--gold-wash);
+    width: 12px;
+    height: 12px;
+  }
+
+  .vnode.current .vlabel {
+    color: var(--ink);
+    font-weight: 600;
+  }
+</style>

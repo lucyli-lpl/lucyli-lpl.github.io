@@ -1,92 +1,173 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import PageHeader from '../../components/PageHeader.astro';
-import Verdict from '../../components/Verdict.astro';
-import CardModule from '../../components/CardModule.astro';
+import SectionIntro from '../../components/SectionIntro.astro';
+import KeyClaim from '../../components/KeyClaim.astro';
+import ModuleAccordion from '../../components/ModuleAccordion.astro';
+import VersionStrip from '../../components/VersionStrip.astro';
 import EvolutionMatrix from '../../components/EvolutionMatrix.astro';
-import { loadChangelog } from '../../lib/changelog';
+import { loadChangelog, entriesForModule } from '../../lib/changelog';
 
 const allModules = await getCollection('methodology');
 const modules = allModules.sort((a, b) => a.data.order - b.data.order);
 const changelog = loadChangelog();
 const latest = changelog.at(-1)?.version ?? '2.1';
+const first = changelog[0]?.version ?? '1';
 ---
 
 <Base title="方法论">
   <div class="container-wide">
-    <PageHeader
-      kicker={`METHODOLOGY · v${latest}`}
+    <SectionIntro
+      kicker={`METHODOLOGY · V${latest}`}
       title="AI 应用能力边界方法论"
-      subtitle="能力三区不是难度分级，而是三种产品承诺——核心区保证结果，边缘区保证处理，界外区保证边界"
-      meta={[`${modules.length} 个模块`]}
+      subtitle="一套持续修订的研究手册：从能力三区出发，穿透判区、测试、运营、生成把关、架构与护栏。"
+      meta={[`${modules.length} 个模块`, `${changelog.length} 次修订`]}
+      hand="A living manual."
     />
 
-    <Verdict text="能力三区不是难度分级，而是三种产品承诺——核心区保证结果，边缘区保证处理，界外区保证边界。" />
-
-    <div class="module-grid">
-      {modules.map(m => (
-        <CardModule
-          order={String(m.data.order).padStart(2, '0')}
-          title={m.data.title}
-          oneLiner={m.data.one_liner}
-          chapterCount={m.data.chapters.length}
-          skills={m.data.skills}
-          href={`/methodology/${m.id}/`}
-        />
-      ))}
-    </div>
-
-    <EvolutionMatrix
-      modules={modules.map(m => ({ id: m.id, order: m.data.order, title: m.data.title }))}
-      entries={changelog}
+    <KeyClaim
+      label="核心命题"
+      text="能力三区不是难度分级，而是三种产品承诺——核心区保证结果，边缘区保证处理，界外区保证边界。"
     />
 
-    <a href="/methodology/changelog/" class="changelog-link">
-      <span class="cl-title">迭代记录 v{changelog[0]?.version ?? '1'} → v{latest}</span>
-      <span class="cl-meta">查看版本历史</span>
-    </a>
+    <section class="modules" aria-label="方法论模块">
+      <div class="modules-head">
+        <p class="section-num">MODULES</p>
+        <span class="modules-hint">点开一条查看章节与修订，第一条默认展开</span>
+      </div>
+      <div class="module-stack">
+        {modules.map((m, i) => (
+          <ModuleAccordion
+            id={m.id}
+            order={m.data.order}
+            title={m.data.title}
+            oneLiner={m.data.one_liner}
+            chapters={m.data.chapters.map(c => ({ slug: c.slug, title: c.title }))}
+            skills={m.data.skills}
+            sinceVersion={m.data.since_version}
+            revisions={entriesForModule(changelog, m.data.order)}
+            href={`/methodology/${m.id}/`}
+            defaultOpen={i === 0}
+          />
+        ))}
+      </div>
+    </section>
+
+    <section class="evolution paper-card" aria-label="方法论演进">
+      <div class="evo-head">
+        <div>
+          <p class="section-num">EVOLUTION · v{first} → v{latest}</p>
+          <h2 class="evo-title">演进</h2>
+        </div>
+        <a href="/methodology/changelog/" class="evo-link">完整迭代记录 →</a>
+      </div>
+
+      <VersionStrip entries={changelog} />
+
+      <details class="evo-details">
+        <summary class="evo-summary">
+          <span>展开演进矩阵</span>
+          <span class="evo-summary-hint">模块 × 版本，格子按触发源着色</span>
+        </summary>
+        <div class="evo-matrix">
+          <EvolutionMatrix
+            modules={modules.map(m => ({ id: m.id, order: m.data.order, title: m.data.title }))}
+            entries={changelog}
+          />
+        </div>
+      </details>
+    </section>
   </div>
 </Base>
 
 <style>
-  .module-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--sp-3);
-    margin-bottom: var(--sp-4);
-  }
+  .modules { margin-bottom: var(--sp-6); }
 
-  @media (max-width: 640px) {
-    .module-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .changelog-link {
+  .modules-head {
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
-    align-items: center;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: var(--sp-2) var(--sp-3);
-    text-decoration: none;
-    color: var(--ink);
-    transition: border-color 0.1s;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
   }
 
-  .changelog-link:hover {
-    border-color: var(--ink);
+  .modules-hint {
+    font-size: var(--fs-meta);
+    color: var(--text-3);
   }
 
-  .cl-title {
-    font-family: var(--font-body);
-    font-weight: 600;
+  .module-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
   }
 
-  .cl-meta {
+  .evolution {
+    padding: var(--sp-3) var(--sp-4);
+  }
+
+  .evo-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-1);
+  }
+
+  .evo-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    margin-top: 4px;
+  }
+
+  .evo-link {
     font-family: var(--font-mono);
     font-size: var(--fs-meta);
-    color: var(--gray-500);
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  .evo-link:hover { color: var(--ink); }
+
+  .evo-details {
+    margin-top: var(--sp-2);
+    border-top: 1px solid var(--line-soft);
+    padding-top: var(--sp-2);
+  }
+
+  .evo-summary {
+    cursor: pointer;
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    list-style: none;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .evo-summary::-webkit-details-marker { display: none; }
+
+  .evo-summary::before {
+    content: '+';
+    font-family: var(--font-mono);
+    color: var(--gold);
+    width: 1em;
+  }
+
+  .evo-details[open] .evo-summary::before { content: '−'; }
+
+  .evo-summary-hint {
+    font-size: var(--fs-meta);
+    font-weight: 400;
+    color: var(--text-3);
+  }
+
+  .evo-matrix { margin-top: var(--sp-1); }
+  .evo-matrix :global(.evo) { margin: 0; }
+  .evo-matrix :global(.evo-head) { display: none; }
+
+  @media (max-width: 767px) {
+    .modules-hint { display: none; }
+    .evolution { padding: var(--sp-2); }
   }
 </style>

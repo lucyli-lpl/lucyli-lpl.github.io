@@ -1,12 +1,14 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ChapterNav from '../../components/ChapterNav.astro';
-import Tag from '../../components/Tag.astro';
+import KeyClaim from '../../components/KeyClaim.astro';
 import GrowthLog from '../../components/GrowthLog.astro';
+import RelatedEntries from '../../components/RelatedEntries.astro';
 import { loadChangelog, entriesForModule } from '../../lib/changelog';
+import { skillMeta } from '../../../site.config';
 
 export async function getStaticPaths() {
   const modules = await getCollection('methodology');
@@ -44,18 +46,20 @@ const headings = chapters.map((ch, i) => ({
         { label: title },
       ]} />
 
-      <PageHeader
+      <ArticleHeader
         kicker={`MODULE ${orderStr}`}
         title={title}
-        subtitle={one_liner}
         meta={[
           `${chapters.length} 章`,
           since_version ? `v${since_version} 起` : '',
-        ].filter(Boolean)}
+          growth.length ? `${growth.length} 次修订` : '',
+        ]}
       />
 
+      {one_liner && <KeyClaim label="核心命题" text={one_liner} />}
+
       {hasDiagram && (
-        <figure class="module-diagram">
+        <figure class="module-diagram paper-card">
           <img src={`/content/methodology/${slug}/diagram.svg`} alt={`${title} 示意图`} loading="lazy" />
         </figure>
       )}
@@ -72,16 +76,23 @@ const headings = chapters.map((ch, i) => ({
         })}
       </article>
 
-      <nav class="module-nav">
+      <RelatedEntries groups={[
+        { label: '关联 skill', items: skills.map(s => ({ title: skillMeta[s]?.display ?? s, href: `/skills/${s}/`, hint: s })) },
+        { label: '相关复盘', items: relatedRetros.map(r => ({ title: r.data.title, href: `/retros/${r.id}/`, hint: r.data.pitfalls.filter(p => p.module === order).length ? `${r.data.pitfalls.filter(p => p.module === order).length} 个坑` : undefined })) },
+      ]} />
+
+      <nav class="module-nav" aria-label="上一个 / 下一个模块">
         {prev && (
           <a href={`/methodology/${prev.id}/`} class="nav-prev">
-            ← {String(prev.data.order).padStart(2, '0')}. {prev.data.title}
+            <span class="nav-label">上一模块</span>
+            {String(prev.data.order).padStart(2, '0')}. {prev.data.title}
           </a>
         )}
         <span class="nav-spacer" />
         {next && (
           <a href={`/methodology/${next.id}/`} class="nav-next">
-            {String(next.data.order).padStart(2, '0')}. {next.data.title} →
+            <span class="nav-label">下一模块</span>
+            {String(next.data.order).padStart(2, '0')}. {next.data.title}
           </a>
         )}
       </nav>
@@ -89,29 +100,6 @@ const headings = chapters.map((ch, i) => ({
 
     <aside class="sidebar">
       <ChapterNav headings={headings} />
-      {skills.length > 0 && (
-        <div class="related-skills">
-          <p class="sidebar-label">关联 skill</p>
-          <div class="skill-tags">
-            {skills.map(s => <Tag label={s} href={`/skills/${s}/`} />)}
-          </div>
-        </div>
-      )}
-      {relatedRetros.length > 0 && (
-        <div class="related-retros">
-          <p class="sidebar-label">相关复盘 · {relatedRetros.length}</p>
-          <ul class="retro-links">
-            {relatedRetros.map(r => (
-              <li>
-                <a href={`/retros/${r.id}/`}>{r.data.title}</a>
-                {r.data.pitfalls.filter(p => p.module === order).length > 0 && (
-                  <span class="retro-pits">{r.data.pitfalls.filter(p => p.module === order).length} 个坑</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
       <GrowthLog entries={growth} />
     </aside>
   </div>
@@ -120,6 +108,7 @@ const headings = chapters.map((ch, i) => ({
 <style>
   .module-diagram {
     margin-bottom: var(--sp-4);
+    padding: var(--sp-3);
   }
 
   .module-diagram img {
@@ -131,82 +120,36 @@ const headings = chapters.map((ch, i) => ({
     display: flex;
     justify-content: space-between;
     gap: var(--sp-2);
-    margin-top: var(--sp-6);
-    padding-top: var(--sp-4);
-    border-top: 1px solid var(--gray-200);
+    margin-top: var(--sp-5);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--line-soft);
   }
 
   .nav-prev, .nav-next {
-    font-size: var(--fs-meta);
-    color: var(--accent);
-    text-decoration: none;
-  }
-
-  .nav-prev:hover, .nav-next:hover {
-    text-decoration: underline;
-  }
-
-  .nav-spacer {
-    flex: 1;
-  }
-
-  .sidebar {
-    order: 1;
-  }
-
-  .related-skills {
-    margin-top: var(--sp-4);
-  }
-
-  .sidebar-label {
-    font-family: var(--font-mono);
-    font-size: var(--fs-meta);
-    color: var(--gray-500);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: var(--sp-1);
-  }
-
-  .skill-tags {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5em;
-  }
-
-  .related-retros { margin-top: var(--sp-4); }
-
-  .retro-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .retro-links li {
-    font-size: var(--fs-meta);
-    line-height: 1.5;
-    margin-bottom: var(--sp-1);
-    display: flex;
-    justify-content: space-between;
-    gap: var(--sp-1);
-  }
-
-  .retro-links a {
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--fs-small);
     color: var(--ink);
-    text-decoration: none;
+    max-width: 46%;
   }
 
-  .retro-links a:hover { text-decoration: underline; }
+  .nav-next { text-align: right; }
 
-  .retro-pits {
+  .nav-label {
     font-family: var(--font-mono);
     font-size: var(--fs-tag);
-    color: var(--warm);
-    white-space: nowrap;
+    color: var(--text-3);
+    letter-spacing: .08em;
   }
 
+  .nav-prev:hover, .nav-next:hover { color: var(--blue); }
+
+  .nav-spacer { flex: 1; }
+
+  .sidebar { order: 1; }
+
   @media (max-width: 900px) {
-    .sidebar {
-      order: -1;
-    }
+    .sidebar { order: -1; }
   }
 </style>

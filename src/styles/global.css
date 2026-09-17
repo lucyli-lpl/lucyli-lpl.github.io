@@ -22,14 +22,24 @@ body {
   line-height: var(--lh-body);
   color: var(--text);
   background-color: var(--paper);
-  background-image: url('/img/paper-texture.webp');
-  background-size: 560px 560px;
-  background-blend-mode: multiply;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* 纸张纹理：极淡地铺在底层，只提供颗粒感，不改变纸色 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url('/img/paper-texture.webp');
+  background-size: 480px 480px;
+  opacity: .28;
+  mix-blend-mode: multiply;
 }
 
 main {

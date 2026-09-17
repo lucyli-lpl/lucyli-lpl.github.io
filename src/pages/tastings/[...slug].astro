@@ -1,22 +1,25 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ChapterNav from '../../components/ChapterNav.astro';
 import Verdict from '../../components/Verdict.astro';
 import Tag from '../../components/Tag.astro';
+import RelatedEntries from '../../components/RelatedEntries.astro';
 
 export async function getStaticPaths() {
   const tastings = await getCollection('tastings');
-  return tastings.map(entry => ({
-    params: { slug: entry.id },
-    props: { entry },
-  }));
+  return tastings.map(entry => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;
-const { product, company, product_launched, analyzed, verdict, patterns, tags, chapters } = entry.data;
+const { product, company, product_launched, analyzed, verdict, patterns, tags, chapters, framework, framework_version } = entry.data;
+const allPatterns = await getCollection('patterns');
+const linkedPatterns = (patterns || []).map(p => {
+  const found = allPatterns.find(x => x.id === p || x.data.pattern_name.toLowerCase() === p.toLowerCase());
+  return { title: found ? `${found.data.pattern_name} ${found.data.chinese_name}` : p, href: found ? `/patterns/${found.id}/` : `/patterns/`, hint: found ? undefined : '未收录' };
+});
 
 const headings = chapters.map((ch, i) => ({
   slug: `ch-${String(i + 1).padStart(2, '0')}`,
@@ -33,22 +36,21 @@ const headings = chapters.map((ch, i) => ({
         { label: product },
       ]} />
 
-      <PageHeader
+      <ArticleHeader
         kicker={`TASTING · ${company}`}
         title={product}
         meta={[
           product_launched ? `上线 ${product_launched}` : '',
           analyzed ? `品鉴 ${analyzed}` : '',
           `${chapters.length} 章`,
-        ].filter(Boolean)}
+        ]}
       />
 
       <Verdict text={verdict} />
 
-      <div class="tags-row">
-        {(patterns || []).map(p => <Tag label={p} href={`/patterns/${p}/`} />)}
-        {(tags || []).map(t => <Tag label={t} />)}
-      </div>
+      {(tags || []).length > 0 && (
+        <div class="tags-row">{(tags || []).map(t => <Tag label={t} />)}</div>
+      )}
 
       <article class="prose" data-pagefind-meta="collection:产品品鉴">
         {chapters.map((ch, i) => {
@@ -61,6 +63,11 @@ const headings = chapters.map((ch, i) => ({
           );
         })}
       </article>
+
+      <RelatedEntries groups={[
+        { label: '关联 pattern', items: linkedPatterns },
+        { label: '使用框架', items: framework ? [{ title: `${framework}${framework_version ? ` v${framework_version}` : ''}`, href: '/skills/ai-product-tasting/' }] : [] },
+      ]} />
     </div>
 
     <aside class="sidebar">
@@ -77,13 +84,9 @@ const headings = chapters.map((ch, i) => ({
     margin-bottom: var(--sp-4);
   }
 
-  .sidebar {
-    order: 1;
-  }
+  .sidebar { order: 1; }
 
   @media (max-width: 900px) {
-    .sidebar {
-      order: -1;
-    }
+    .sidebar { order: -1; }
   }
 </style>

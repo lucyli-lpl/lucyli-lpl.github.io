@@ -1,0 +1,49 @@
+---
+/**
+ * 核心命题块。methodology：blue-wash；retro：paper + gold 标记。
+ * tasting 的强判断用 Verdict（实色墨蓝），不用这个。
+ */
+interface Props {
+  text: string;
+  label?: string;
+  tone?: 'blue' | 'gold';
+}
+
+const { text, label = 'KEY CLAIM', tone = 'blue' } = Astro.props;
+---
+
+<aside class:list={['key-claim', `key-claim--${tone}`]}>
+  <span class="section-num">{label}</span>
+  <p class="claim-text">{text}</p>
+</aside>
+
+<style>
+  .key-claim {
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--sp-4);
+  }
+
+  .key-claim--blue {
+    background: var(--blue-wash);
+  }
+
+  .key-claim--gold {
+    background: var(--paper-white);
+    border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--gold);
+  }
+
+  .section-num {
+    display: block;
+    margin-bottom: var(--sp-1);
+  }
+
+  .claim-text {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+</style>

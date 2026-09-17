@@ -1,0 +1,91 @@
+---
+/**
+ * 文章尾部「相关条目」：分组列表，不打断正文。
+ */
+export interface RelatedGroup {
+  label: string;
+  items: { title: string; href: string; hint?: string; external?: boolean }[];
+}
+
+interface Props {
+  groups: RelatedGroup[];
+}
+
+const { groups } = Astro.props;
+const visible = groups.filter(g => g.items.length > 0);
+---
+
+{visible.length > 0 && (
+  <section class="related" aria-label="相关条目">
+    {visible.map(g => (
+      <div class="related-group">
+        <p class="section-num">{g.label}</p>
+        <ul class="related-list">
+          {g.items.map(it => (
+            <li>
+              <a href={it.href} target={it.external ? '_blank' : undefined} rel={it.external ? 'noopener' : undefined}>
+                <span class="related-title">{it.title}</span>
+                {it.hint && <span class="related-hint">{it.hint}</span>}
+                <span class="related-arrow" aria-hidden="true">{it.external ? '↗' : '→'}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+)}
+
+<style>
+  .related {
+    margin-top: var(--sp-6);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--sp-4);
+  }
+
+  .section-num {
+    margin-bottom: var(--sp-1);
+  }
+
+  .related-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .related-list li {
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .related-list a {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-1);
+    padding: var(--sp-1) 0;
+    color: var(--ink);
+    transition: color var(--dur-fast);
+  }
+
+  .related-list a:hover {
+    color: var(--blue);
+  }
+
+  .related-title {
+    font-size: var(--fs-small);
+  }
+
+  .related-hint {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--text-3);
+  }
+
+  .related-arrow {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    color: var(--text-3);
+  }
+</style>

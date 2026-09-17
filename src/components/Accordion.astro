@@ -1,0 +1,114 @@
+---
+/**
+ * 通用 accordion 行：原生 <button aria-expanded> + grid 0fr→1fr 动画。
+ * slot="summary" 放折叠态内容，默认 slot 放展开内容。
+ * 事件用 document 级委托，View Transitions 换页后无需重绑。
+ */
+interface Props {
+  id: string;
+  open?: boolean;
+  /** archive：左侧金色书脊（方法论 / 复盘）；plain：无书脊（技能箱） */
+  variant?: 'archive' | 'plain';
+}
+
+const { id, open = false, variant = 'archive' } = Astro.props;
+---
+
+<div class:list={['acc', `acc--${variant}`, { 'is-open': open }]} data-acc>
+  <button type="button" class="acc-head" data-acc-toggle aria-expanded={open ? 'true' : 'false'} aria-controls={id}>
+    <span class="acc-summary"><slot name="summary" /></span>
+    <span class="acc-chevron" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </span>
+  </button>
+  <div class:list={['acc-panel', { 'is-open': open }]} id={id}>
+    <div class="acc-body"><slot /></div>
+  </div>
+</div>
+
+<script>
+  function initAccordion() {
+    if ((window as any).__accBound) return;
+    (window as any).__accBound = true;
+    document.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-acc-toggle]');
+      if (!btn) return;
+      const row = btn.closest<HTMLElement>('[data-acc]');
+      const panel = row?.querySelector<HTMLElement>('.acc-panel');
+      const willOpen = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(willOpen));
+      panel?.classList.toggle('is-open', willOpen);
+      row?.classList.toggle('is-open', willOpen);
+    });
+  }
+  initAccordion();
+  document.addEventListener('astro:page-load', initAccordion);
+</script>
+
+<style>
+  .acc {
+    background: var(--paper-white);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    transition: box-shadow var(--dur-base) var(--ease-soft), border-color var(--dur-base), transform var(--dur-base) var(--ease-soft);
+  }
+
+  .acc--archive {
+    border-left: 3px solid var(--gold-soft);
+  }
+
+  .acc.is-open {
+    box-shadow: var(--shadow-paper);
+    border-color: var(--line);
+  }
+
+  .acc--archive.is-open {
+    border-left-color: var(--gold);
+    transform: translateX(4px); /* 抽出 dossier 的一点位移 */
+  }
+
+  .acc-head {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    background: none;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+    color: var(--ink);
+    border-radius: var(--radius);
+  }
+
+  .acc-head:hover {
+    background: var(--paper-2);
+  }
+
+  .acc-summary {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .acc-chevron {
+    flex-shrink: 0;
+    margin-top: .35em;
+    color: var(--text-3);
+    transition: transform var(--dur-base) var(--ease-standard), color var(--dur-fast);
+  }
+
+  .acc.is-open .acc-chevron {
+    transform: rotate(180deg);
+    color: var(--gold);
+  }
+
+  .acc-body {
+    padding: 0 var(--sp-3) var(--sp-3);
+  }
+
+  @media (max-width: 767px) {
+    .acc-head { padding: var(--sp-2); }
+    .acc-body { padding: 0 var(--sp-2) var(--sp-2); }
+    .acc--archive.is-open { transform: none; }
+  }
+</style>

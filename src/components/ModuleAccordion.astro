@@ -1,0 +1,213 @@
+---
+/**
+ * 方法论索引的档案条：折叠 = 编号 / 标题 / 一句话；
+ * 展开 = 章节列表 / 关联 skill / 版本 / 最近修订 / 进入模块。
+ */
+import Accordion from './Accordion.astro';
+import Tag from './Tag.astro';
+import { TRIGGER_META, type ChangelogEntry } from '../lib/changelog';
+
+interface Props {
+  id: string;
+  order: number;
+  title: string;
+  oneLiner?: string;
+  chapters: { slug: string; title: string }[];
+  skills: string[];
+  sinceVersion?: string;
+  revisions: ChangelogEntry[];
+  href: string;
+  defaultOpen?: boolean;
+}
+
+const { id, order, title, oneLiner, chapters, skills, sinceVersion, revisions, href, defaultOpen = false } = Astro.props;
+const orderStr = String(order).padStart(2, '0');
+const latest = revisions.at(-1);
+---
+
+<Accordion id={`module-${id}`} open={defaultOpen}>
+  <Fragment slot="summary">
+    <div class="mod-summary">
+      <span class="mod-order">{orderStr}</span>
+      <div class="mod-text">
+        <span class="mod-title">{title}</span>
+        {oneLiner && <span class="mod-liner">{oneLiner}</span>}
+      </div>
+      <span class="mod-count">{chapters.length} 章</span>
+    </div>
+  </Fragment>
+
+  <div class="mod-body">
+    <div class="mod-col">
+      <p class="section-num">章节</p>
+      <ol class="mod-chapters">
+        {chapters.map((ch, i) => (
+          <li>
+            <a href={`${href}#ch-${String(i + 1).padStart(2, '0')}`}>
+              <span class="ch-num">{String(i + 1).padStart(2, '0')}</span>{ch.title}
+            </a>
+          </li>
+        ))}
+        {chapters.length === 0 && <li class="mod-empty">尚未成文</li>}
+      </ol>
+    </div>
+
+    <div class="mod-col">
+      <dl class="mod-facts">
+        {sinceVersion && <><dt>自</dt><dd>v{sinceVersion}</dd></>}
+        <dt>修订</dt><dd>{revisions.length} 次</dd>
+        {latest && (
+          <>
+            <dt>最近</dt>
+            <dd>
+              <a href={latest.retro ? `/retros/${latest.retro}/` : `/methodology/changelog/#v${latest.version}`} class="mod-latest">
+                v{latest.version} · {TRIGGER_META[latest.trigger].glyph} {latest.trigger_ref ?? latest.summary}
+              </a>
+            </dd>
+          </>
+        )}
+      </dl>
+      {skills.length > 0 && (
+        <div class="mod-skills">
+          <p class="section-num">关联 skill</p>
+          <div class="mod-tags">{skills.map(s => <Tag label={s} href={`/skills/${s}/`} />)}</div>
+        </div>
+      )}
+      <a href={href} class="mod-cta">进入模块 →</a>
+    </div>
+  </div>
+</Accordion>
+
+<style>
+  .mod-summary {
+    display: grid;
+    grid-template-columns: 3em 1fr auto;
+    gap: var(--sp-2);
+    align-items: baseline;
+  }
+
+  .mod-order {
+    font-family: var(--font-mono);
+    font-size: var(--fs-h3);
+    color: var(--gold);
+    letter-spacing: .04em;
+  }
+
+  .mod-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .mod-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .mod-liner {
+    font-size: var(--fs-small);
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  .mod-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  .mod-body {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: var(--sp-4);
+    padding: var(--sp-2) 0 0 3em;
+    padding-left: calc(3em + var(--sp-2));
+    border-top: 1px dashed var(--silver-light);
+    margin-top: var(--sp-1);
+  }
+
+  .section-num { margin-bottom: var(--sp-1); }
+
+  .mod-chapters {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .mod-chapters li {
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .mod-chapters a {
+    display: flex;
+    gap: var(--sp-1);
+    padding: 6px 0;
+    font-size: var(--fs-small);
+    color: var(--ink);
+  }
+
+  .mod-chapters a:hover { color: var(--blue); }
+
+  .ch-num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--text-3);
+    padding-top: 2px;
+  }
+
+  .mod-empty {
+    font-size: var(--fs-small);
+    color: var(--text-3);
+    padding: 6px 0;
+  }
+
+  .mod-facts {
+    display: grid;
+    grid-template-columns: 3em 1fr;
+    gap: 4px var(--sp-1);
+    margin: 0 0 var(--sp-2);
+    font-size: var(--fs-small);
+  }
+
+  .mod-facts dt {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--text-3);
+    padding-top: 3px;
+  }
+
+  .mod-facts dd { margin: 0; color: var(--text-2); }
+
+  .mod-latest {
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+
+  .mod-latest:hover { color: var(--ink); text-decoration: underline; }
+
+  .mod-skills { margin-bottom: var(--sp-2); }
+  .mod-tags { display: flex; flex-wrap: wrap; gap: .4em; }
+
+  .mod-cta {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--paper-white);
+    background: var(--ink);
+    padding: .5em 1em;
+    border-radius: var(--radius);
+    transition: background var(--dur-fast);
+  }
+
+  .mod-cta:hover { background: var(--ink-2); }
+
+  @media (max-width: 767px) {
+    .mod-summary { grid-template-columns: 2.4em 1fr; }
+    .mod-count { display: none; }
+    .mod-body { grid-template-columns: 1fr; padding-left: 0; gap: var(--sp-3); }
+  }
+</style>

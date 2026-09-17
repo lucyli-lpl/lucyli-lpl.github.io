@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ChapterNav from '../../components/ChapterNav.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
@@ -64,16 +64,16 @@ const headings = doc.parsed
         { label: pattern_name },
       ]} />
 
-      <PageHeader
+      <ArticleHeader
         kicker={`PATTERN · ${status.toUpperCase()}`}
         title={`${pattern_name} ${chinese_name}`}
         subtitle={doc.oneLiner.zh}
-      />
-
-      <div class="tags-row">
-        <StatusBadge status={status} />
-        {tags.map(t => <Tag label={t} />)}
-      </div>
+      >
+        <Fragment slot="badges">
+          <StatusBadge status={status} />
+          {tags.map(t => <Tag label={t} />)}
+        </Fragment>
+      </ArticleHeader>
 
       <PatternStatusBar
         status={status}

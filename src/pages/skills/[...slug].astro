@@ -1,21 +1,32 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import KeyClaim from '../../components/KeyClaim.astro';
+import RelatedEntries from '../../components/RelatedEntries.astro';
 import { skillMeta } from '../../../site.config';
 
 export async function getStaticPaths() {
   const skills = await getCollection('skills');
-  return skills.map(entry => ({
-    params: { slug: entry.id },
-    props: { entry },
-  }));
+  return skills.map(entry => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;
 const meta = skillMeta[entry.id];
 const displayName = meta?.display || entry.data.name;
+const repo = meta?.repo ?? 'ai-pm-fieldbook';
+const modules = await getCollection('methodology');
+const mod = meta?.module ? modules.find(m => String(m.data.order).padStart(2, '0') === meta.module) : undefined;
+const tastings = await getCollection('tastings');
+const patterns = await getCollection('patterns');
+const outputs =
+  entry.id === 'ai-product-tasting' ? tastings.map(t => ({ title: `${t.data.product} 品鉴`, href: `/tastings/${t.id}/` })) :
+  entry.id === 'pattern-tracker' ? patterns.map(p => ({ title: `${p.data.pattern_name} ${p.data.chinese_name}`, href: `/patterns/${p.id}/` })) :
+  [];
+
+const sourceUrl = `https://github.com/lucyli-lpl/${repo}/tree/main/skills/${entry.id}`;
+const installCmd = `git clone --depth 1 https://github.com/lucyli-lpl/${repo} && cp -r ${repo}/skills/${entry.id} ~/.claude/skills/`;
 ---
 
 <Base title={displayName}>
@@ -25,33 +36,102 @@ const displayName = meta?.display || entry.data.name;
       { label: displayName },
     ]} />
 
-    <PageHeader
+    <ArticleHeader
       kicker={`SKILL · ${entry.id}`}
       title={displayName}
       meta={[
         meta?.repo ? `来自 ${meta.repo}` : '',
-        meta?.module ? `关联模块 ${meta.module}` : '',
-      ].filter(Boolean)}
+        mod ? `关联模块 ${meta!.module}` : '',
+      ]}
     />
 
     {entry.data.description && (
-      <p class="skill-description">{entry.data.description}</p>
+      <KeyClaim label="适用什么问题" text={entry.data.description} tone="gold" />
     )}
+
+    <section class="install paper-card" aria-label="安装与调用">
+      <div class="install-head">
+        <span class="section-num">安装 / 调用</span>
+        <button type="button" class="copy-btn" data-copy={installCmd}>复制命令</button>
+      </div>
+      <pre class="install-cmd"><code>{installCmd}</code></pre>
+      <p class="install-note">装进 Claude 的 skills 目录后，用自然语言触发即可（例如 "帮我品鉴 XX 产品"）。也可以直接把 <a href={sourceUrl} target="_blank" rel="noopener">SKILL.md ↗</a> 内容贴进对话。</p>
+    </section>
 
     <article class="prose" data-pagefind-meta="collection:技能箱">
       <Fragment set:html={entry.data.body} />
     </article>
+
+    <RelatedEntries groups={[
+      { label: '站内产出', items: outputs },
+      { label: '关联方法论', items: mod ? [{ title: `${meta!.module} ${mod.data.title}`, href: `/methodology/${mod.id}/` }] : [] },
+      { label: '源文件', items: [{ title: 'SKILL.md on GitHub', href: sourceUrl, external: true, hint: repo }] },
+    ]} />
   </div>
 </Base>
 
+<script>
+  function initCopy() {
+    if ((window as any).__copyBound) return;
+    (window as any).__copyBound = true;
+    document.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-copy]');
+      if (!btn) return;
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy ?? '');
+        const old = btn.textContent;
+        btn.textContent = '已复制';
+        setTimeout(() => { btn.textContent = old; }, 1600);
+      } catch { btn.textContent = '复制失败'; }
+    });
+  }
+  initCopy();
+  document.addEventListener('astro:page-load', initCopy);
+</script>
+
 <style>
-  .skill-description {
-    font-size: var(--fs-body);
-    color: var(--gray-700);
-    line-height: var(--lh-body);
-    margin-bottom: var(--sp-4);
-    padding: var(--sp-3);
+  .install {
+    padding: var(--sp-2) var(--sp-3);
+    margin-bottom: var(--sp-5);
+  }
+
+  .install-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-1);
+  }
+
+  .copy-btn {
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--silver-light);
+    border-radius: var(--radius);
+    padding: .3em .7em;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover { border-color: var(--ink); }
+
+  .install-cmd {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
     background: var(--paper-2);
     border-radius: var(--radius);
+    padding: var(--sp-2);
+    overflow-x: auto;
+    margin-bottom: var(--sp-1);
+    white-space: pre-wrap;
+    word-break: break-all;
   }
+
+  .install-note {
+    font-size: var(--fs-meta);
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  .install-note a { color: var(--blue); }
 </style>

@@ -1,0 +1,72 @@
+---
+/**
+ * 统一详情页头：kicker（金色编号感）/ H1 / 副题 / meta 条。
+ * 可用 slot="badges" 放状态徽章。
+ */
+interface Props {
+  kicker?: string;
+  title: string;
+  subtitle?: string;
+  meta?: string[];
+}
+
+const { kicker, title, subtitle, meta = [] } = Astro.props;
+const metaItems = meta.filter(Boolean);
+---
+
+<header class="article-header">
+  {kicker && <p class="section-num">{kicker}</p>}
+  <h1 class="article-title">{title}</h1>
+  {subtitle && <p class="article-subtitle">{subtitle}</p>}
+  {(metaItems.length > 0 || Astro.slots.has('badges')) && (
+    <div class="meta-strip">
+      <slot name="badges" />
+      {metaItems.map(m => <span class="meta-item">{m}</span>)}
+    </div>
+  )}
+</header>
+
+<style>
+  .article-header {
+    padding-bottom: var(--sp-3);
+    margin-bottom: var(--sp-4);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .section-num {
+    margin-bottom: var(--sp-1);
+  }
+
+  .article-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h1);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: var(--sp-2);
+  }
+
+  .article-subtitle {
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--text-2);
+    max-width: 60ch;
+    margin-bottom: var(--sp-2);
+  }
+
+  .meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-1) var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--text-3);
+  }
+
+  .meta-item + .meta-item::before {
+    content: '·';
+    margin-right: var(--sp-2);
+    color: var(--silver);
+  }
+</style>

@@ -1,23 +1,33 @@
 ---
+/**
+ * 空档案抽屉：不是"敬请期待"，是"正在整理"。
+ */
 interface Props {
   title: string;
   description?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description = '正在整理' } = Astro.props;
 ---
 
 <div class="empty-state">
+  <span class="section-num">EMPTY DRAWER</span>
   <h2>{title}</h2>
-  {description && <p>{description}</p>}
+  <p>{description}</p>
 </div>
 
 <style>
   .empty-state {
-    background: var(--paper-2);
-    padding: var(--sp-6);
-    border-radius: var(--radius);
+    border: 1px dashed var(--silver);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6) var(--sp-4);
     text-align: center;
+    background: var(--paper-white);
+  }
+
+  .section-num {
+    display: block;
+    margin-bottom: var(--sp-1);
   }
 
   h2 {
@@ -28,7 +38,7 @@ const { title, description } = Astro.props;
   }
 
   p {
-    color: var(--gray-500);
+    color: var(--text-3);
     font-size: var(--fs-meta);
   }
 </style>
