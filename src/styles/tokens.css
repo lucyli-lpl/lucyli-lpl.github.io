@@ -76,7 +76,7 @@
   --font-mono:    "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
   --font-hand:    "Caveat", "Kaiti SC", "KaiTi", cursive;
 
-  --fs-display: clamp(2.4rem, 4.6vw, 4.4rem);
+  --fs-display: clamp(2.2rem, 3.6vw, 3.6rem);
   --fs-h1:      clamp(1.9rem, 3vw, 3rem);
   --fs-h2:      clamp(1.45rem, 1.9vw, 2rem);
   --fs-h3:      1.15rem;

@@ -54,19 +54,18 @@ const icons: Record<Props['icon'], string> = {
     gap: var(--sp-1);
     padding: var(--sp-3);
     color: var(--ink);
-    transform: perspective(900px) rotate(var(--rot)) rotateX(var(--tx)) rotateY(var(--ty));
-    transform-style: preserve-3d;
+    transform: rotate(var(--rot)) rotateX(var(--tx)) rotateY(var(--ty));
     min-height: 168px;
   }
 
   .archive-note--lg {
-    min-height: 236px;
+    min-height: 200px;
     padding: var(--sp-4);
   }
 
   .archive-note:hover,
   .archive-note:focus-visible {
-    transform: perspective(900px) rotate(var(--rot)) rotateX(var(--tx)) rotateY(var(--ty)) translateY(-6px);
+    transform: rotate(var(--rot)) rotateX(var(--tx)) rotateY(var(--ty)) translateY(-6px);
     border-color: var(--silver);
   }
 

@@ -10,7 +10,6 @@
     transform var(--dur-fast) var(--ease-standard),
     box-shadow var(--dur-fast) var(--ease-standard),
     border-color var(--dur-fast) var(--ease-standard);
-  will-change: transform;
 }
 
 .lift:hover,
@@ -37,6 +36,10 @@ html.js .reveal {
 html.js .reveal.is-in {
   opacity: 1;
   transform: none;
+}
+
+html.js .reveal--instant {
+  transition: none !important;
 }
 
 /* 同组内错开 */

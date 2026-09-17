@@ -41,15 +41,16 @@
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  /* 模糊半径克制：多张玻璃叠在照片上时，18px+saturate 合成开销明显 */
   .glass {
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(18px) saturate(.85);
-    backdrop-filter: blur(18px) saturate(.85);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
   .glass-hi {
     background: var(--glass-bg-hi);
-    -webkit-backdrop-filter: blur(14px) saturate(.9);
-    backdrop-filter: blur(14px) saturate(.9);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
   }
 }
 

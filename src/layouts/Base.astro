@@ -47,7 +47,15 @@ const pageDescription = description || 'AI PM 的方法论、观察与技能箱'
   <script>
     // section reveal：进入视口加 .is-in；ClientRouter 换页后重新绑定
     function bindReveal() {
-      const els = document.querySelectorAll<HTMLElement>('.reveal:not(.is-in)');
+      const all = Array.from(document.querySelectorAll<HTMLElement>('.reveal:not(.is-in)'));
+      if (!all.length) return;
+      // 已在首屏的元素直接显示，不走过渡（首屏内容不依赖动画，也利于 LCP）
+      const vh = window.innerHeight;
+      const els = all.filter(e => {
+        const r = e.getBoundingClientRect();
+        if (r.top < vh && r.bottom > 0) { e.classList.add('reveal--instant', 'is-in'); return false; }
+        return true;
+      });
       if (!els.length) return;
       if (!('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('is-in')); return; }
       const io = new IntersectionObserver((entries) => {

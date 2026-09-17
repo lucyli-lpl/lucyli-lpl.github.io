@@ -25,10 +25,10 @@ const noteLayout: Record<string, { area: string; size: 'lg' | 'md'; rotate: numb
 
     <div class="container-hero hero-grid">
       <div class="hero-copy">
-        <p class="kicker reveal">A quieter mind · A brighter you</p>
-        <h1 id="hero-title" class="hero-title reveal" data-delay="1">让学习和实践沉淀为方法，<br/>构建更清晰的思考体系。</h1>
-        <p class="hero-sub reveal" data-delay="2">一线企业 AI PM 的实践方法论、产品观察与工具沉淀。从能力边界出发，把项目里踩过的坑，反向修订成方法的下一个版本。</p>
-        <div class="hero-actions reveal" data-delay="3">
+        <p class="kicker">A quieter mind · A brighter you</p>
+        <h1 id="hero-title" class="hero-title">让学习和实践沉淀为方法，<br class="br-wide"/>构建更清晰的思考体系。</h1>
+        <p class="hero-sub">一线企业 AI PM 的实践方法论、产品观察与工具沉淀。从能力边界出发，把项目里踩过的坑，反向修订成方法的下一个版本。</p>
+        <div class="hero-actions">
           <a href="/methodology/" class="btn btn--primary">进入知识地图</a>
           <a href="#featured" class="btn btn--ghost">查看最近更新</a>
         </div>
@@ -132,11 +132,16 @@ const noteLayout: Record<string, { area: string; size: 'lg' | 'md'; rotate: numb
   /* ---------- Hero ---------- */
   .hero {
     position: relative;
+    isolation: isolate; /* 明确的层叠上下文：照片层 0，内容层 2 */
     overflow: hidden;
     padding: var(--sp-6) 0 var(--sp-5);
     min-height: 640px;
     display: flex;
     align-items: center;
+  }
+
+  .hero-photo {
+    z-index: 0;
   }
 
   .hero-photo img {
@@ -146,7 +151,7 @@ const noteLayout: Record<string, { area: string; size: 'lg' | 'md'; rotate: numb
 
   .hero-grid {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     width: 100%;
     display: grid;
     grid-template-columns: 44fr 56fr;
@@ -232,6 +237,7 @@ const noteLayout: Record<string, { area: string; size: 'lg' | 'md'; rotate: numb
       'visual notes notes';
     gap: var(--sp-3);
     padding: var(--sp-2) var(--sp-1);
+    perspective: 1000px; /* 透视放在父级，便签本身不做 3D 上下文 */
   }
 
   /* 层叠感：方法论在最前 */
@@ -397,7 +403,8 @@ const noteLayout: Record<string, { area: string; size: 'lg' | 'md'; rotate: numb
   @media (max-width: 767px) {
     .hero { min-height: 0; padding: var(--sp-4) 0 var(--sp-3); }
     .hero-grid { grid-template-columns: 1fr; gap: var(--sp-3); }
-    .hero-title { font-size: 2.2rem; }
+    .hero-title { font-size: 2.1rem; }
+    .hero-title .br-wide { display: none; }
     .hero-hand { display: none; }
     .hero-photo img { object-position: 60% 30%; opacity: .55; }
 
