@@ -38,7 +38,7 @@ body::before {
   pointer-events: none;
   background-image: url('/img/paper-texture.webp');
   background-size: 480px 480px;
-  opacity: .28;
+  opacity: .16;
   mix-blend-mode: multiply;
 }
 
