@@ -102,10 +102,27 @@ button {
   padding: 0 var(--sp-3);
 }
 
+/* 侧栏整体吸顶；内容超出视口时在侧栏内部滚动，各块之间不会重叠 */
+.layout-sidebar > .sidebar {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+  max-height: calc(100vh - 104px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 4px;
+}
+
 @media (max-width: 900px) {
   .layout-sidebar {
     grid-template-columns: 1fr;
     gap: var(--sp-4);
+  }
+  .layout-sidebar > .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 }
 

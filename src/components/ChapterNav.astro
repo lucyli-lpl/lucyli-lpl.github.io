@@ -60,12 +60,9 @@ const { headings, title = '目录' } = Astro.props;
 </script>
 
 <style>
+  /* 不再单独 sticky：整个 .sidebar 一起吸顶（见 global.css），避免和侧栏其他块重叠 */
   .chapter-nav {
-    position: sticky;
-    top: 96px;
     font-size: var(--fs-meta);
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
   }
 
   .chapter-nav-title {
@@ -110,8 +107,6 @@ const { headings, title = '目录' } = Astro.props;
 
   @media (max-width: 900px) {
     .chapter-nav {
-      position: static;
-      max-height: none;
       border: 1px solid var(--line-soft);
       border-radius: var(--radius);
       padding: var(--sp-2);
