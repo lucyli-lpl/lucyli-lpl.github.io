@@ -1,71 +1,115 @@
-<div id="search-modal" class="search-modal" hidden>
+---
+/**
+ * 检索档案：Pagefind 搜索弹窗。
+ * 通过 transition:persist 跨页保留（已加载的索引和事件监听不丢）。
+ */
+---
+
+<div id="search-modal" class="search-modal" hidden transition:persist role="dialog" aria-modal="true" aria-label="检索档案">
   <div class="search-overlay" data-close></div>
-  <div class="search-dialog">
+  <div class="search-dialog paper-card">
+    <header class="search-head">
+      <span class="section-num">ARCHIVE SEARCH</span>
+      <h2 class="search-title">检索档案</h2>
+      <p class="search-hint"><kbd>↑</kbd><kbd>↓</kbd> 选择 · <kbd>Enter</kbd> 打开 · <kbd>Esc</kbd> 关闭</p>
+    </header>
     <div id="search-container"></div>
   </div>
 </div>
 
 <script>
-  const modal = document.getElementById('search-modal');
-  const trigger = document.querySelector('.search-trigger');
+  function initSearch() {
+    const modal = document.getElementById('search-modal');
+    if (!modal || modal.dataset.bound) return;
+    modal.dataset.bound = '1';
 
-  function openSearch() {
-    modal?.removeAttribute('hidden');
-    document.body.style.overflow = 'hidden';
-    const input = modal?.querySelector('input');
-    if (input) input.focus();
-  }
+    let initialized = false;
+    let lastFocus: HTMLElement | null = null;
 
-  function closeSearch() {
-    modal?.setAttribute('hidden', '');
-    document.body.style.overflow = '';
-  }
+    function openSearch() {
+      lastFocus = document.activeElement as HTMLElement | null;
+      modal!.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+      modal!.querySelector<HTMLInputElement>('input')?.focus();
+    }
 
-  // pagefind-ui.js 是挂在 window 上的传统脚本，不是 ES module，不能用 import()
-  function loadPagefind(): Promise<void> {
-    if ((window as any).PagefindUI) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      const css = document.createElement('link');
-      css.rel = 'stylesheet';
-      css.href = '/pagefind/pagefind-ui.css';
-      document.head.appendChild(css);
-      const s = document.createElement('script');
-      s.src = '/pagefind/pagefind-ui.js';
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error('pagefind-ui.js failed to load'));
-      document.head.appendChild(s);
-    });
-  }
+    function closeSearch() {
+      modal!.setAttribute('hidden', '');
+      document.body.style.overflow = '';
+      lastFocus?.focus();
+    }
 
-  let initialized = false;
-  trigger?.addEventListener('click', async () => {
-    openSearch();
-    if (initialized) return;
-    try {
-      await loadPagefind();
-      new (window as any).PagefindUI({
-        element: '#search-container',
-        showSubResults: true,
-        showImages: false,
-        translations: { placeholder: '搜索方法论、pattern、复盘…', zero_results: '没有找到「[SEARCH_TERM]」' },
+    // pagefind-ui.js 是挂在 window 上的传统脚本，用 <script> 标签加载
+    function loadPagefind(): Promise<void> {
+      if ((window as any).PagefindUI) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = '/pagefind/pagefind-ui.css';
+        document.head.appendChild(css);
+        const s = document.createElement('script');
+        s.src = '/pagefind/pagefind-ui.js';
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('pagefind-ui.js failed to load'));
+        document.head.appendChild(s);
       });
-      initialized = true;
-      modal?.querySelector('input')?.focus();
-    } catch (err) {
-      const c = document.getElementById('search-container');
-      if (c) c.textContent = '搜索索引加载失败（本地 dev 模式下没有索引，需 build 后使用）';
-      console.error(err);
     }
-  });
 
-  modal?.querySelector('[data-close]')?.addEventListener('click', closeSearch);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeSearch();
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      trigger?.click();
+    async function ensureUI() {
+      if (initialized) return;
+      try {
+        await loadPagefind();
+        new (window as any).PagefindUI({
+          element: '#search-container',
+          showSubResults: true,
+          showImages: false,
+          translations: { placeholder: '搜索方法论、pattern、复盘…', zero_results: '没有找到「[SEARCH_TERM]」' },
+        });
+        initialized = true;
+        modal!.querySelector<HTMLInputElement>('input')?.focus();
+      } catch (err) {
+        const c = document.getElementById('search-container');
+        if (c) c.textContent = '搜索索引加载失败（本地 dev 模式下没有索引，需 build 后使用）';
+        console.error(err);
+      }
     }
-  });
+
+    // 触发按钮每页会重新渲染，用事件委托
+    document.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).closest('.search-trigger');
+      if (t) { openSearch(); ensureUI(); }
+    });
+    modal.querySelector('[data-close]')?.addEventListener('click', closeSearch);
+
+    // 键盘：Cmd/Ctrl+K 打开，Esc 关闭，↑↓ 选择结果，Enter 打开
+    const results = () => Array.from(modal!.querySelectorAll<HTMLElement>('.pagefind-ui__result'));
+    const setActive = (i: number) => {
+      const list = results();
+      list.forEach(r => r.classList.remove('is-active'));
+      const el = list[i];
+      if (el) { el.classList.add('is-active'); el.scrollIntoView({ block: 'nearest' }); }
+    };
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault(); openSearch(); ensureUI(); return;
+      }
+      if (modal!.hasAttribute('hidden')) return;
+      if (e.key === 'Escape') { closeSearch(); return; }
+      const list = results();
+      if (!list.length) return;
+      const cur = list.findIndex(r => r.classList.contains('is-active'));
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(cur + 1, list.length - 1)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(Math.max(cur - 1, 0)); }
+      else if (e.key === 'Enter' && cur >= 0) {
+        e.preventDefault();
+        list[cur].querySelector<HTMLAnchorElement>('.pagefind-ui__result-link')?.click();
+      }
+    });
+    // 换页时关闭
+    document.addEventListener('astro:before-swap', closeSearch);
+  }
+  initSearch();
+  document.addEventListener('astro:page-load', initSearch);
 </script>
 
 <style>
@@ -76,7 +120,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 15vh;
+    padding-top: 12vh;
   }
 
   .search-modal[hidden] {
@@ -86,26 +130,51 @@
   .search-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--overlay);
   }
 
   .search-dialog {
     position: relative;
-    background: var(--paper);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    width: 90%;
-    max-width: 640px;
-    max-height: 70vh;
+    width: 92%;
+    max-width: 760px;
+    max-height: 74vh;
     overflow-y: auto;
-    padding: var(--sp-3) var(--sp-4);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  }
+
+  .search-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+    flex-wrap: wrap;
+  }
+
+  .search-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    color: var(--ink);
+  }
+
+  .search-hint {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: var(--fs-tag);
+    color: var(--text-3);
+  }
+
+  .search-hint kbd {
+    font-family: inherit;
+    border: 1px solid var(--silver-light);
+    border-radius: 3px;
+    padding: 0 .3em;
+    margin-right: .15em;
   }
 
   @media (max-width: 640px) {
-    .search-dialog {
-      padding: var(--sp-2);
-    }
+    .search-modal { padding-top: 6vh; }
+    .search-dialog { padding: var(--sp-2); max-height: 84vh; }
+    .search-hint { display: none; }
   }
 </style>
 
@@ -113,31 +182,47 @@
   .pagefind-ui {
     --pagefind-ui-scale: 0.9;
     --pagefind-ui-primary: var(--ink);
-    --pagefind-ui-text: var(--ink);
-    --pagefind-ui-background: var(--paper);
-    --pagefind-ui-border: var(--border);
-    --pagefind-ui-tag: var(--gray-100);
+    --pagefind-ui-text: var(--text);
+    --pagefind-ui-background: var(--paper-white);
+    --pagefind-ui-border: var(--silver-light);
+    --pagefind-ui-tag: var(--paper-2);
     --pagefind-ui-border-width: 1px;
     --pagefind-ui-border-radius: 4px;
     --pagefind-ui-font: var(--font-body);
   }
 
-  /* 让结果区更松一点，和站点其他卡片的节奏一致 */
   .pagefind-ui__search-input {
     font-family: var(--font-body);
     font-weight: 400;
+    background: var(--paper-white);
+  }
+
+  .pagefind-ui__search-input:focus {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
   }
 
   .pagefind-ui__message {
     font-family: var(--font-mono);
     font-size: var(--fs-meta);
-    color: var(--gray-500);
+    color: var(--text-3);
     padding: var(--sp-1) 0;
   }
 
+  /* 结果行：hover / 键盘选中 → 银灰 selection bar */
   .pagefind-ui__result {
-    padding: var(--sp-2) 0;
-    border-top: 1px solid var(--gray-200);
+    position: relative;
+    padding: var(--sp-2) var(--sp-2);
+    margin: 0 calc(-1 * var(--sp-2));
+    border-top: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    transition: background var(--dur-fast);
+  }
+
+  .pagefind-ui__result:hover,
+  .pagefind-ui__result.is-active {
+    background: var(--paper-2);
+    box-shadow: inset 3px 0 0 var(--silver);
   }
 
   .pagefind-ui__result-title {
@@ -145,9 +230,19 @@
     font-weight: 600;
   }
 
+  .pagefind-ui__result-title a {
+    color: var(--ink);
+  }
+
   .pagefind-ui__result-excerpt {
     line-height: var(--lh-body);
-    color: var(--gray-700);
+    color: var(--text-2);
+  }
+
+  .pagefind-ui__result-excerpt mark {
+    background: var(--gold-wash);
+    color: var(--ink);
+    padding: 0 .1em;
   }
 
   .pagefind-ui__result-nested {
@@ -158,5 +253,7 @@
   .pagefind-ui__result-tag {
     font-family: var(--font-mono);
     font-size: var(--fs-tag);
+    color: var(--gold);
+    background: var(--gold-wash);
   }
 </style>

@@ -8,17 +8,17 @@ import { skillMeta } from '../../../site.config';
 const allSkills = await getCollection('skills');
 ---
 
-<Base title="工具箱">
+<Base title="技能箱">
   <div class="container-wide">
     <PageHeader
       kicker="SKILLS"
-      title="工具箱"
+      title="技能箱"
       subtitle="可复用的 AI 产品分析技能"
       meta={[`${allSkills.length} 个 skill`]}
     />
 
     {allSkills.length === 0 ? (
-      <EmptyState title="工具箱 · 筹备中" description="尚无 skill 内容" />
+      <EmptyState title="技能箱 · 筹备中" description="尚无 skill 内容" />
     ) : (
       <div class="skill-grid">
         {allSkills.map(s => {

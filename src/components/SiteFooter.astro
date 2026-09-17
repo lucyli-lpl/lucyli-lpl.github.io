@@ -1,51 +1,136 @@
 ---
+import { nav, siteTitle, siteTagline } from '../../site.config';
+
+interface Props {
+  /** compact：首页窄幅；default：内页常规 */
+  variant?: 'default' | 'compact';
+}
+
+const { variant = 'default' } = Astro.props;
 ---
 
-<footer class="site-footer">
+<footer class:list={['site-footer', `site-footer--${variant}`]}>
   <div class="footer-inner">
-    <span class="footer-copy">&copy; 2026 lucyli-lpl &middot; 内容以 CC BY-NC-SA 4.0 共享</span>
-    <nav class="footer-links">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">{siteTitle}</a>
+      <span class="footer-tagline">{siteTagline}</span>
+    </div>
+
+    <nav class="footer-nav" aria-label="页脚导航">
+      {nav.map(item => <a href={item.href}>{item.label}</a>)}
+    </nav>
+
+    <div class="footer-meta">
+      <span>&copy; 2026 &middot; CC BY-NC-SA 4.0</span>
       <a href="https://github.com/lucyli-lpl" target="_blank" rel="noopener">GitHub</a>
       <a href="/rss.xml">RSS</a>
-    </nav>
+    </div>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    border-top: 1px solid var(--border);
-    padding: var(--sp-3) 0;
-    margin-top: var(--sp-8);
+    position: relative;
+    margin-top: var(--sp-7);
+    padding: var(--sp-5) 0 var(--sp-4);
+  }
+
+  /* 银色细分割线，不是整条粗边 */
+  .site-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(100% - 2 * var(--sp-3), var(--w-wide));
+    height: 1px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, transparent, var(--silver) 15%, var(--silver) 85%, transparent);
   }
 
   .footer-inner {
     max-width: var(--w-wide);
     margin: 0 auto;
     padding: 0 var(--sp-3);
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--sp-2) var(--sp-4);
     align-items: center;
-    flex-wrap: wrap;
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: baseline;
     gap: var(--sp-2);
+    flex-wrap: wrap;
   }
 
-  .footer-copy {
-    font-size: var(--fs-meta);
-    color: var(--gray-500);
+  .footer-logo {
+    font-family: var(--font-mono);
+    font-size: var(--fs-body);
+    color: var(--ink);
   }
 
-  .footer-links {
+  .footer-tagline {
+    font-family: var(--font-display);
+    font-size: var(--fs-small);
+    color: var(--text-2);
+  }
+
+  .footer-nav {
     display: flex;
     gap: var(--sp-2);
+    flex-wrap: wrap;
+    justify-self: end;
   }
 
-  .footer-links a {
+  .footer-nav a,
+  .footer-meta a {
     font-size: var(--fs-meta);
-    color: var(--gray-500);
-    text-decoration: none;
+    color: var(--text-3);
+    transition: color var(--dur-fast);
   }
 
-  .footer-links a:hover {
+  .footer-nav a:hover,
+  .footer-meta a:hover {
     color: var(--ink);
+  }
+
+  .footer-meta {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--text-3);
+  }
+
+  /* ---------- compact（首页） ---------- */
+  .site-footer--compact {
+    margin-top: var(--sp-5);
+    padding: var(--sp-3) 0;
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+  }
+
+  .site-footer--compact .footer-inner {
+    width: 100%;
+    grid-template-columns: 1fr auto auto;
+  }
+
+  .site-footer--compact .footer-meta {
+    grid-column: auto;
+  }
+
+  @media (max-width: 767px) {
+    .site-footer { margin-top: var(--sp-6); }
+    .footer-inner,
+    .site-footer--compact .footer-inner {
+      grid-template-columns: 1fr;
+      padding: 0 var(--sp-2);
+    }
+    .footer-nav { justify-self: start; }
+    .site-footer--compact .footer-nav { display: none; }
+    .footer-meta { grid-column: auto; flex-wrap: wrap; }
   }
 </style>

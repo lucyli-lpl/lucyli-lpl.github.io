@@ -1,5 +1,6 @@
 export const siteTitle = 'lucyli-lpl';
-export const siteDescription = 'AI PM · 方法论 / 观察 / 工具';
+export const siteDescription = 'AI PM · 方法论 / 观察 / 技能箱';
+export const siteTagline = '把学习和实践沉淀为方法。';
 export const githubUser = 'lucyli-lpl';
 export const githubSite = 'https://github.com/lucyli-lpl/lucyli-lpl.github.io';
 
@@ -7,7 +8,7 @@ export const nav = [
   { label: '方法论', href: '/methodology/' },
   { label: '复盘', href: '/retros/' },
   { label: '观察', href: '/observations/' },
-  { label: '工具箱', href: '/skills/' },
+  { label: '技能箱', href: '/skills/' },
   { label: '视觉库', href: '/presets/' },
   { label: '笔记', href: '/notes/' },
   { label: '关于', href: '/about/' },
@@ -19,7 +20,7 @@ export const registry = {
   patterns:    { kind: 'articles', nav: '观察',   path: '/patterns',    label: 'pattern 追踪', listStyle: 'rows' as const },
   tastings:    { kind: 'cases',    nav: '观察',   path: '/tastings',    label: '产品品鉴' },
   anatomies:   { kind: 'cases',    nav: '观察',   path: '/anatomies',   label: '公司拆解' },
-  skills:      { kind: 'skills',   nav: '工具箱', path: '/skills',      label: '工具箱' },
+  skills:      { kind: 'skills',   nav: '技能箱', path: '/skills',      label: '技能箱' },
   presets:     { kind: 'presets',  nav: '视觉库', path: '/presets',     label: '视觉库' },
   notes:       { kind: 'articles', nav: '笔记',   path: '/notes',       label: '笔记' },
 } as const;
