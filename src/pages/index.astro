@@ -1,259 +1,424 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import Tag from '../components/Tag.astro';
-import { collectUpdates } from '../lib/collect-updates';
+import ArchiveNote from '../components/ArchiveNote.astro';
+import { archiveNotes, currentFocus, featuredEntries } from '../../site.config';
 
-const modules = await getCollection('methodology');
-const patterns = await getCollection('patterns');
-const tastings = await getCollection('tastings');
-const skills = await getCollection('skills');
-const presets = await getCollection('presets');
-const retros = await getCollection('retros');
-
-const sections = [
-  { label: '方法论模块', count: modules.length, href: '/methodology/' },
-  { label: '项目复盘', count: retros.length, href: '/retros/' },
-  { label: 'pattern 追踪', count: patterns.length, href: '/patterns/' },
-  { label: '产品品鉴', count: tastings.length, href: '/tastings/' },
-  { label: 'Skill', count: skills.length, href: '/skills/' },
-  { label: '视觉预设', count: presets.length, href: '/presets/' },
-];
-
-const updates = await collectUpdates();
-const recentUpdates = updates.slice(0, 8);
-
-const kindLabel: Record<string, string> = {
-  new: '新增',
-  evolved: '演进',
-  changelog: '迭代',
-};
-
-const collectionLabel: Record<string, string> = {
-  patterns: 'pattern',
-  tastings: '品鉴',
-  methodology: '方法论',
-  retros: '复盘',
-  notes: '笔记',
+const [primary, ...secondary] = featuredEntries;
+const noteLayout: Record<string, { area: string; size: 'lg' | 'md'; rotate: number }> = {
+  methodology:  { area: 'meth',   size: 'lg', rotate: -1.1 },
+  observations: { area: 'obs',    size: 'md', rotate: 1.3 },
+  skills:       { area: 'skill',  size: 'md', rotate: -0.6 },
+  presets:      { area: 'visual', size: 'md', rotate: 0.9 },
+  notes:        { area: 'notes',  size: 'md', rotate: -0.4 },
 };
 ---
 
-<Base title="首页">
-  <div class="container-wide hero">
-    <p class="kicker">AI PM &middot; 方法论 / 观察 / 工具</p>
-    <h1>把 AI 的模糊能力，<br/>规定成清晰的产品承诺</h1>
-    <p class="subtitle">一线企业 AI PM 的实践方法论、产品观察与工具沉淀。从能力边界出发，穿透立项、测试、上线到运营的全流程。</p>
-    <div class="hero-actions">
-      <a href="/methodology/" class="btn-primary">读方法论</a>
-      <a href="/observations/" class="btn-secondary">看观察</a>
+<Base title="首页" footer="compact">
+  <!-- ========== A. Hero / Knowledge Desk ========== -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="photo-layer hero-photo">
+      <picture>
+        <source media="(max-width: 767px)" srcset="/img/board-wall-wide-800.webp" />
+        <img src="/img/board-wall-wide-1440.webp" alt="" width="1440" height="810" fetchpriority="high" decoding="async" />
+      </picture>
     </div>
-  </div>
 
-  <div class="container-wide stats">
-    {sections.map(s => (
-      <a href={s.href} class="stat-card">
-        <span class="stat-count">{s.count}</span>
-        <span class="stat-label">{s.label}</span>
-      </a>
-    ))}
-  </div>
+    <div class="container-hero hero-grid">
+      <div class="hero-copy">
+        <p class="kicker reveal">A quieter mind · A brighter you</p>
+        <h1 id="hero-title" class="hero-title reveal" data-delay="1">让学习和实践沉淀为方法，<br/>构建更清晰的思考体系。</h1>
+        <p class="hero-sub reveal" data-delay="2">一线企业 AI PM 的实践方法论、产品观察与工具沉淀。从能力边界出发，把项目里踩过的坑，反向修订成方法的下一个版本。</p>
+        <div class="hero-actions reveal" data-delay="3">
+          <a href="/methodology/" class="btn btn--primary">进入知识地图</a>
+          <a href="#featured" class="btn btn--ghost">查看最近更新</a>
+        </div>
+        <span class="hand hero-hand" aria-hidden="true">Small progress, big change.</span>
+      </div>
 
-  {recentUpdates.length > 0 && (
-    <div class="container-wide updates-section">
-      <h2 class="section-heading">最近更新</h2>
-      <div class="update-list">
-        {recentUpdates.map(u => (
-          <a href={u.href} class="update-row">
-            <span class="update-date">{u.date}</span>
-            <Tag label={kindLabel[u.kind] || u.kind} />
-            <span class="update-collection">{collectionLabel[u.collection] || u.collection}</span>
-            <span class="update-title">{u.title}</span>
-          </a>
+      <div class="research-board" data-board>
+        {archiveNotes.map((n, i) => (
+          <ArchiveNote
+            title={n.title}
+            sub={n.sub}
+            desc={n.desc}
+            href={n.href}
+            icon={n.icon}
+            size={noteLayout[n.key].size}
+            rotate={noteLayout[n.key].rotate}
+            area={noteLayout[n.key].area}
+          />
         ))}
       </div>
     </div>
-  )}
+  </section>
+
+  <!-- ========== B. 正在沉淀 + 精选内容 ========== -->
+  <section class="desk container-wide" id="featured" aria-label="正在沉淀与精选内容">
+    <aside class="focus reveal">
+      <p class="section-num">CURRENT FOCUS</p>
+      <h2 class="focus-title">正在沉淀</h2>
+      <ol class="focus-list">
+        {currentFocus.map((f, i) => (
+          <li class="focus-item">
+            <span class="focus-num">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <p class="focus-name">{f.title}</p>
+              <p class="focus-q">{f.question}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </aside>
+
+    <div class="featured">
+      <p class="section-num">FEATURED</p>
+      <h2 class="featured-title">精选内容</h2>
+
+      <div class="featured-grid">
+        <a href={primary.href} class="feat feat--primary paper-card lift reveal">
+          {'image' in primary && primary.image && (
+            <figure class="feat-figure">
+              <img src={primary.image} alt={primary.imageAlt ?? ''} loading="lazy" decoding="async" />
+            </figure>
+          )}
+          <div class="feat-body">
+            <span class="feat-kicker">{primary.kicker}</span>
+            <h3 class="feat-name">{primary.title}</h3>
+            <p class="feat-summary">{primary.summary}</p>
+            <span class="feat-more">阅读 →</span>
+          </div>
+        </a>
+
+        <div class="feat-side">
+          {secondary.map((e, i) => (
+            <a href={e.href} class="feat feat--secondary paper-card lift reveal" data-delay={String(i + 1)}>
+              <span class="feat-kicker">{e.kicker}</span>
+              <h3 class="feat-name">{e.title}</h3>
+              <p class="feat-summary">{e.summary}</p>
+              <span class="feat-more">阅读 →</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
 </Base>
 
+<script>
+  // 细指针设备：便签随指针轻微倾斜（≤ 2deg）；reduced-motion / 触屏不启用
+  function initTilt() {
+    const fine = matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!fine) return;
+    document.querySelectorAll<HTMLElement>('[data-tilt]:not([data-tilt-bound])').forEach(el => {
+      el.dataset.tiltBound = '1';
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - .5;
+        const py = (e.clientY - r.top) / r.height - .5;
+        el.style.setProperty('--ty', `${(px * 4).toFixed(2)}deg`);
+        el.style.setProperty('--tx', `${(-py * 4).toFixed(2)}deg`);
+      });
+      el.addEventListener('pointerleave', () => {
+        el.style.setProperty('--tx', '0deg');
+        el.style.setProperty('--ty', '0deg');
+      });
+    });
+  }
+  initTilt();
+  document.addEventListener('astro:page-load', initTilt);
+</script>
+
 <style>
+  /* ---------- Hero ---------- */
   .hero {
-    padding: var(--sp-8) 0 var(--sp-4);
+    position: relative;
+    overflow: hidden;
+    padding: var(--sp-6) 0 var(--sp-5);
+    min-height: 640px;
+    display: flex;
+    align-items: center;
   }
 
-  .kicker {
-    font-family: var(--font-mono);
-    font-size: var(--fs-meta);
-    color: var(--gray-500);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: var(--sp-2);
+  .hero-photo img {
+    object-position: 68% 40%;
+    opacity: .9;
   }
 
-  h1 {
-    font-family: var(--font-display);
-    font-size: 2.4rem;
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: var(--sp-2);
+  .hero-grid {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 44fr 56fr;
+    gap: var(--sp-6);
+    align-items: center;
   }
 
-  .subtitle {
-    font-size: var(--fs-body);
-    color: var(--gray-700);
+  .hero-copy {
+    position: relative;
     max-width: 560px;
-    line-height: var(--lh-body);
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-display);
+    font-weight: 700;
+    line-height: 1.22;
+    letter-spacing: -.01em;
+    margin: var(--sp-2) 0 var(--sp-3);
+    color: var(--ink);
+  }
+
+  .hero-sub {
+    font-size: 1.02rem;
+    line-height: 1.8;
+    color: var(--text-2);
+    max-width: 44ch;
     margin-bottom: var(--sp-4);
   }
 
   .hero-actions {
     display: flex;
     gap: var(--sp-2);
+    flex-wrap: wrap;
   }
 
-  .btn-primary {
-    display: inline-block;
-    background: var(--ink);
-    color: var(--paper);
-    font-family: var(--font-body);
-    font-size: var(--fs-body);
-    font-weight: 500;
-    padding: 0.6em 1.4em;
-    border-radius: var(--radius);
-    text-decoration: none;
-    transition: opacity 0.1s;
-  }
-
-  .btn-primary:hover {
-    opacity: 0.85;
-  }
-
-  .btn-secondary {
-    display: inline-block;
-    background: transparent;
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: var(--fs-body);
-    font-weight: 500;
-    padding: 0.6em 1.4em;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    text-decoration: none;
-    transition: border-color 0.1s;
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--ink);
-  }
-
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: var(--sp-2);
-    padding-bottom: var(--sp-6);
-  }
-
-  .stat-card {
-    display: flex;
-    flex-direction: column;
+  .btn {
+    display: inline-flex;
     align-items: center;
-    padding: var(--sp-3);
-    border: 1px solid var(--border);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    font-weight: 500;
+    padding: .7em 1.5em;
     border-radius: var(--radius);
-    text-decoration: none;
-    color: var(--ink);
-    transition: border-color 0.1s;
+    border: 1px solid transparent;
+    transition: transform var(--dur-fast) var(--ease-standard), background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
   }
 
-  .stat-card:hover {
+  .btn--primary {
+    background: var(--ink);
+    color: var(--paper-white);
+  }
+
+  .btn--primary:hover {
+    background: var(--ink-2);
+    transform: translateY(-1px);
+  }
+
+  .btn--ghost {
+    color: var(--ink);
+    border-color: var(--line);
+    background: var(--glass-bg-hi);
+  }
+
+  .btn--ghost:hover {
     border-color: var(--ink);
   }
 
-  .stat-count {
-    font-family: var(--font-mono);
-    font-size: var(--fs-h1);
-    font-weight: 700;
+  .hero-hand {
+    display: block;
+    margin-top: var(--sp-4);
+    margin-left: var(--sp-1);
   }
 
-  .stat-label {
-    font-size: var(--fs-meta);
-    color: var(--gray-500);
+  /* ---------- Research board ---------- */
+  .research-board {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      'meth meth obs'
+      'meth meth skill'
+      'visual notes notes';
+    gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-1);
   }
 
-  .updates-section {
-    padding-bottom: var(--sp-8);
+  /* 层叠感：方法论在最前 */
+  .research-board > :global([data-note='meth']) { z-index: 3; }
+  .research-board > :global([data-note='obs']) { z-index: 2; margin-top: var(--sp-3); }
+  .research-board > :global([data-note='skill']) { z-index: 1; margin-bottom: var(--sp-2); }
+  .research-board > :global([data-note='visual']) { z-index: 2; margin-top: var(--sp-1); }
+  .research-board > :global([data-note='notes']) { z-index: 1; }
+
+  /* ---------- Desk（正在沉淀 + 精选） ---------- */
+  .desk {
+    display: grid;
+    grid-template-columns: 30fr 70fr;
+    gap: var(--sp-6);
+    padding-top: var(--sp-6);
+    scroll-margin-top: 80px;
   }
 
-  .section-heading {
+  .focus-title,
+  .featured-title {
     font-family: var(--font-display);
     font-size: var(--fs-h2);
-    font-weight: 700;
-    margin-bottom: var(--sp-3);
-    padding-bottom: var(--sp-1);
-    border-bottom: 1px solid var(--border);
+    margin: var(--sp-1) 0 var(--sp-3);
   }
 
-  .update-list {
+  .focus-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
     flex-direction: column;
   }
 
-  .update-row {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-2);
+  .focus-item {
+    display: grid;
+    grid-template-columns: 2.2em 1fr;
+    gap: var(--sp-1);
     padding: var(--sp-2) 0;
-    border-bottom: 1px solid var(--gray-100);
-    text-decoration: none;
-    color: var(--ink);
-    transition: background 0.1s;
+    border-top: 1px solid var(--line-soft);
   }
 
-  .update-row:hover {
-    background: var(--paper-2);
+  .focus-item:last-child {
+    border-bottom: 1px solid var(--line-soft);
   }
 
-  .update-row:last-child {
-    border-bottom: none;
-  }
-
-  .update-date {
+  .focus-num {
     font-family: var(--font-mono);
     font-size: var(--fs-meta);
-    color: var(--gray-500);
-    flex-shrink: 0;
-    min-width: 6em;
+    color: var(--gold);
+    letter-spacing: .08em;
+    padding-top: .25em;
   }
 
-  .update-collection {
+  .focus-name {
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: .2em;
+  }
+
+  .focus-q {
+    font-size: var(--fs-small);
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: 62fr 38fr;
+    gap: var(--sp-3);
+    align-items: stretch;
+  }
+
+  .feat {
+    display: flex;
+    flex-direction: column;
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .feat--primary .feat-figure {
+    background: var(--paper-white);
+    border-bottom: 1px solid var(--line-soft);
+    padding: var(--sp-3);
+    aspect-ratio: 16 / 8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .feat--primary .feat-figure img {
+    max-height: 100%;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .feat-body {
+    padding: var(--sp-3) var(--sp-4) var(--sp-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+
+  .feat-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .feat--secondary {
+    padding: var(--sp-3);
+    gap: var(--sp-1);
+    flex: 1;
+  }
+
+  .feat-kicker {
     font-family: var(--font-mono);
     font-size: var(--fs-tag);
-    color: var(--gray-500);
-    flex-shrink: 0;
+    letter-spacing: .1em;
+    color: var(--gold);
   }
 
-  .update-title {
-    font-size: var(--fs-body);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .feat-name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.35;
+    font-weight: 700;
   }
 
-  @media (max-width: 640px) {
-    h1 {
-      font-size: 1.8rem;
-    }
+  .feat--primary .feat-name {
+    font-size: 1.55rem;
+  }
 
-    .stats {
-      grid-template-columns: repeat(3, 1fr);
-    }
+  .feat-summary {
+    font-size: var(--fs-small);
+    line-height: 1.7;
+    color: var(--text-2);
+  }
 
-    .update-row {
-      flex-wrap: wrap;
-    }
+  .feat-more {
+    margin-top: auto;
+    padding-top: var(--sp-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    color: var(--text-3);
+    transition: color var(--dur-fast);
+  }
 
-    .update-title {
-      flex-basis: 100%;
-      white-space: normal;
+  .feat:hover .feat-more {
+    color: var(--gold);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1100px) {
+    .hero-grid { grid-template-columns: 46fr 54fr; gap: var(--sp-4); }
+    .research-board { gap: var(--sp-2); }
+  }
+
+  @media (max-width: 900px) {
+    .desk { grid-template-columns: 1fr; gap: var(--sp-4); }
+    .featured-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 767px) {
+    .hero { min-height: 0; padding: var(--sp-4) 0 var(--sp-3); }
+    .hero-grid { grid-template-columns: 1fr; gap: var(--sp-3); }
+    .hero-title { font-size: 2.2rem; }
+    .hero-hand { display: none; }
+    .hero-photo img { object-position: 60% 30%; opacity: .55; }
+
+    /* 便签改横向 rail */
+    .research-board {
+      display: flex;
+      gap: var(--sp-2);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      padding: var(--sp-2) 0 var(--sp-1);
+      margin: 0 calc(-1 * var(--sp-2));
+      padding-left: var(--sp-2);
     }
+    .research-board::-webkit-scrollbar { display: none; }
+    .research-board > :global(.archive-note) {
+      flex: 0 0 78vw;
+      scroll-snap-align: start;
+      margin: 0 !important;
+      grid-area: auto !important;
+    }
+    .research-board > :global(.archive-note:last-child) { margin-right: var(--sp-2) !important; }
   }
 </style>

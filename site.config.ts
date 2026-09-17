@@ -14,6 +14,46 @@ export const nav = [
   { label: '关于', href: '/about/' },
 ] as const;
 
+/** 首页研究板：五张档案便签（固定配置，不依赖数量统计） */
+export const archiveNotes = [
+  { key: 'methodology', title: '方法论', sub: 'Methodology', desc: '把 AI 的模糊能力规定成清晰的产品承诺。八个模块，持续修订。', href: '/methodology/', icon: 'book' },
+  { key: 'observations', title: '观察', sub: 'Observations', desc: '追踪设计模式的演化，拆解具体产品与公司。', href: '/observations/', icon: 'eye' },
+  { key: 'skills', title: '技能箱', sub: 'Skills', desc: '可直接调用的认知模块：品鉴、追踪、拆解。', href: '/skills/', icon: 'drawer' },
+  { key: 'presets', title: '视觉库', sub: 'Visual Library', desc: '输出用的视觉预设与样本页。', href: '/presets/', icon: 'swatch' },
+  { key: 'notes', title: '笔记', sub: '慢，就是快', desc: '随手记下的想法与碎片，慢慢沉淀。', href: '/notes/', icon: 'pen' },
+] as const;
+
+/** 首页「正在沉淀」：最多 3 条长期主题，只有标题 + 一句话问题 */
+export const currentFocus = [
+  { title: '能力边界方法论', question: '怎样把 AI 的模糊能力，规定成产品敢说出口的承诺？' },
+  { title: '复盘反哺方法', question: '真实项目里踩的坑，如何反向修订方法论的下一个版本？' },
+  { title: 'AI 产品设计模式', question: '同一种能力，不同产品为什么做出了不同的取舍？' },
+] as const;
+
+/** 首页「精选内容」：1 主 + 最多 2 次，人工策展 */
+export const featuredEntries = [
+  {
+    kicker: '方法论 · 模块 01',
+    title: '能力三区 = 三种产品承诺',
+    summary: '核心区保证结果，边缘区保证处理，界外区保证边界——三区依据产品承诺，不依据模型表现。这是整套方法论的地基。',
+    href: '/methodology/01-three-zones/',
+    image: '/content/methodology/01-three-zones/diagram.svg',
+    imageAlt: '能力三区示意图',
+  },
+  {
+    kicker: 'Pattern 追踪',
+    title: 'Teach-by-Demonstration 录屏示教',
+    summary: '用户示范一次工作流，agent 转化为可重放的 skill。四家实现、七个演化事件。',
+    href: '/patterns/teach-by-demonstration/',
+  },
+  {
+    kicker: '方法论 · 迭代记录',
+    title: 'v2.1：补齐 prompt 分层、架构判断、生产护栏',
+    summary: '从 v1 到 v2.1 的十二次修订，每一次都有触发源。',
+    href: '/methodology/changelog/',
+  },
+] as const;
+
 export const registry = {
   methodology: { kind: 'modules',  nav: '方法论', path: '/methodology', label: '方法论' },
   retros:      { kind: 'cases',    nav: '复盘',   path: '/retros',      label: '项目复盘' },
