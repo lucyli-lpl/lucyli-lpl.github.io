@@ -139,7 +139,8 @@ const retros = defineCollection({
 });
 
 const notes = defineCollection({
-  loader: glob({ base: 'content/notes', pattern: '*.md' }),
+  // README 是格式说明，_ 开头是草稿，都不当笔记
+  loader: glob({ base: 'content/notes', pattern: ['*.md', '!README.md', '!_*.md'] }),
   schema: z.object({
     title: z.string(),
     date: z.string().optional(),
