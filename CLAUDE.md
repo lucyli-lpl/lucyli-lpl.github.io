@@ -148,3 +148,7 @@ If any answer is no, revise before proceeding.
 ## Completion
 
 Use `acceptance-checklist.md` as the final gate. Do not mark the redesign complete while any P0 item remains failing.
+
+## Status (2026-09-17)
+
+Implemented under a **reduced scope** agreed with the author — see `docs/PROGRESS.md` §2–§3 for what is done, what is intentionally deferred (pattern drawer, folder switching, preset gallery, retro/pitfall accordions, notes index) and the content-volume thresholds for revisiting each. Do not treat the checklist P0s for those items as failures. The implemented component/token specs are in `design.md` Appendix A and take precedence over §2–§16 where they differ.

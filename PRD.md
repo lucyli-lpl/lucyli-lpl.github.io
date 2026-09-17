@@ -1,7 +1,7 @@
 # PRD — lucyli-lpl 个人知识与项目网站 v2
 
 版本：v2.0 Design Direction · 2026-09-17  
-状态：Design Approved / Ready for Implementation Planning  
+状态：**部分实施**（2026-09-17，按缩减范围）——完成情况、有意不做的项及其重新评估条件见 `docs/PROGRESS.md`；实际落地的组件与 token 见 `design.md` 附录 A  
 配套：`design.md`（视觉与交互规范）、`tech.md`（现有技术架构）
 
 > 核心定位：**编辑部 / 研究档案室式的可探索知识空间**。  

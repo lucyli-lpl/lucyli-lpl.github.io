@@ -1,8 +1,10 @@
 # design.md — lucyli-lpl Design System v2
 
-版本：v2.0 · 2026-09-17  
+版本：v2.1 · 2026-09-17（v2.0 为设计交接稿；v2.1 追加 **附录 A：实施记录**，以代码为准）  
 主题：**Editorial Research Archive / 编辑部式研究档案室**  
 适用：Astro 5；交互实现技术开放，以视觉保真、渐进增强、性能与可维护性为约束
+
+> 阅读指引：§0–§16 是设计意图；**附录 A** 是实际落地的 token、组件、材质与工程规则，两者冲突时以附录 A（即代码）为准。实施进度与未做项见 `docs/PROGRESS.md`。
 
 ---
 
@@ -685,3 +687,141 @@ src/styles/
 - 局部 3D perspective / Three.js 档案空间
 
 Experimental 必须可以关闭、降级或删除；任何实验效果若降低可读性、性能或导航确定性，直接回退。
+
+---
+
+# 附录 A · 实施记录（v2.1，2026-09-17）
+
+以下是仓库里实际落地的规格。与 §2–§16 的差异都有原因，见 A.7。
+
+## A.1 文件架构
+
+```txt
+src/styles/
+  tokens.css       色彩 / 字体 / 字号 / 间距 / 布局 / 动效 token，旧变量名保留为别名
+  global.css       reset、body 纸纹、容器、侧栏吸顶、通用工具类
+  materials.css    .paper / .paper-card / .archive-row / .glass / .glass-hi / .divider-metal / .section-num / .dot-gold / .hand / .photo-layer
+  motion.css       .lift / .reveal / .acc-panel / .rail / view-transition 时长 / :focus-visible / reduced-motion
+  prose.css        长文正文
+src/layouts/Base.astro     ClientRouter、html.js、reveal 观察器、footer variant
+src/components/            见 A.3
+site.config.ts             nav / archiveNotes / currentFocus / featuredEntries / skillMeta
+public/img/                build-images.mjs 产出的 webp（1440 / 800 两档 + 纸纹 800²）
+src/assets/img/            原始 png（image2.5 生成）
+```
+
+## A.2 Token（实际值）
+
+| 类别 | Token | 值 | 备注 |
+|---|---|---|---|
+| 纸 | `--paper` | `#FAF7F1` | 比 §2 的 #F6F2E9 亮一档，见 A.7 |
+| | `--paper-2` / `--paper-3` / `--paper-white` | `#F2EDE4` / `#E9E2D7` / `#FDFCF9` | 轻底 / 分隔 / 卡片 |
+| 墨 | `--ink` / `--ink-2` / `--ink-3` | `#113053` / `#294C6F` / `#5A7187` | 标题、主按钮、Verdict |
+| 蓝灰 | `--blue` / `--blue-soft` / `--blue-wash` | `#3B6287` / `#89A2B8` / `#E6EDF2` | 链接、目录当前项、KeyClaim 底 |
+| 银 | `--silver` / `--silver-dark` / `--silver-light` | `#B7C0C8` / `#7C8893` / `#DCE2E6` | 只做线、边、夹子 |
+| 金 | `--gold` / `--gold-soft` / `--gold-wash` | `#AC8E56` / `#DCCBA8` / `#F1E9D9` | 编号、当前项、修订、坑 |
+| 文字 | `--text` / `--text-2` / `--text-3` | `#252C32` / `#5C6670` / `#879099` | 正文 / 次级 / 弱化 |
+| 线 | `--line` / `--line-soft` | `rgba(17,48,83,.16)` / `.08` | |
+| 玻璃 | `--glass-bg` / `--glass-bg-hi` / `--glass-border` / `--glass-shadow` | 同 §2 | |
+| 头部 | `--header-bg` / `--header-bg-hi` | `rgba(250,247,241,.78)` / `.92` | 滚动 >40px 切换 |
+| 遮罩 | `--overlay` | `rgba(17,48,83,.28)` | 搜索弹窗 |
+| 投影 | `--shadow-paper` / `--shadow-lift` | 见 tokens.css | 卡片静态 / 抬起 |
+| 字体 | `--font-display` / `--font-body` / `--font-mono` / `--font-hand` | Noto Serif SC / Inter+Noto Sans SC / JetBrains Mono / Caveat | Google Fonts |
+| 字号 | `--fs-display` | `clamp(2.2rem, 3.6vw, 3.6rem)` | 比 §3 小，见 A.7 |
+| | `--fs-h1` / `--fs-h2` / `--fs-h3` | `clamp(1.9rem,3vw,3rem)` / `clamp(1.45rem,1.9vw,2rem)` / `1.15rem` | |
+| | `--fs-body` / `--fs-small` / `--fs-meta` / `--fs-tag` | `.98rem` / `.86rem` / `.78rem` / `.7rem` | |
+| 行高 | `--lh-body` / `--lh-prose` | `1.7` / `1.86` | 长文用 prose |
+| 间距 | `--sp-1…7` | `.5 / 1 / 1.5 / 2 / 3 / 4.5 / 7 rem` | `--sp-8` = 4rem 为旧别名 |
+| 布局 | `--w-prose` / `--w-wide` / `--w-hero` / `--w-side` | `760 / 1180 / 1320 / 220 px` | |
+| 圆角 | `--radius` / `--radius-lg` | `4px` / `10px` | |
+| 动效 | `--dur-fast` / `--dur-base` / `--dur-slow` | `160 / 260 / 420 ms` | hover / accordion / reveal |
+| | `--ease-standard` / `--ease-soft` | 同 §10 | |
+
+**语义别名**（旧组件零改动换肤）：`--accent→--blue`、`--accent-light→--blue-wash`、`--warm→--gold`、`--warm-light→--gold-wash`、`--border→--line`、`--gray-100→--paper-2`、`--gray-200→--paper-3`、`--gray-300→--silver-light`、`--gray-500→--text-3`、`--gray-700→--text-2`。新组件请直接用新名。
+
+## A.3 组件目录
+
+### 全局壳
+
+| 组件 | Props | 说明 |
+|---|---|---|
+| `SiteHeader` | — | 64px sticky，`--header-bg` + blur 12px，滚动 >40px 加 `.is-scrolled`；当前项 = 墨蓝 + 4px 金点；`⌘K` 提示；≤767px 变 logo + 检索 + 菜单，菜单为不透明纸白全宽 sheet |
+| `SiteFooter` | `variant?: 'default' \| 'compact'` | compact（首页）≥100px 单行；default 两行；顶部银色渐变细线 |
+| `SearchModal` | — | `transition:persist`；760px；标题"检索档案" + 键位提示；↑↓ 选择（`.is-active` 银灰 selection bar）、Enter 打开、Esc 关闭；Pagefind 用 `<script>` 标签加载 |
+
+### 页头 / 文章系统
+
+| 组件 | Props | 用途 |
+|---|---|---|
+| `SectionIntro` | `kicker? title subtitle? meta?: string[] hand?` | 栏目索引页头，`--fs-display`，右下可选手写旁注 |
+| `ArticleHeader` | `kicker? title subtitle? meta?: string[]` + `slot="badges"` | 所有详情页头；meta 用 `·` 分隔的等宽条 |
+| `PageHeader` | 同 ArticleHeader（无 slot） | 旧 API，样式已对齐；新页面不要再用 |
+| `KeyClaim` | `text label?='KEY CLAIM' tone?: 'blue' \| 'gold'` | blue：方法论核心命题；gold：技能"适用什么问题"、复盘 Learning Shift |
+| `Verdict` | `text label?='VERDICT'` | 唯一实色墨蓝块，仅品鉴 / 强判断 |
+| `RelatedEntries` | `groups: {label, items: {title, href, hint?, external?}[]}[]` | 文章尾部分组列表，空组自动隐藏 |
+| `ChapterNav` | `headings: {slug,text,depth}[] title?` | 目录；本身不 sticky（由 `.layout-sidebar > .sidebar` 整体吸顶）；≤900px 为 `<details>` 折叠；IntersectionObserver 高亮 |
+| `Breadcrumb` | `items` | 不变 |
+
+### 渐进披露
+
+| 组件 | Props | 用途 |
+|---|---|---|
+| `Accordion` | `id open? variant?: 'archive' \| 'plain'` + `slot="summary"` / 默认 slot | `<button aria-expanded>` + `.acc-panel` grid 0fr→1fr；document 级事件委托（换页不失效）；archive 变体有金色书脊，展开时右移 4px |
+| `ModuleAccordion` | `id order title oneLiner? chapters skills sinceVersion? revisions href defaultOpen?` | 方法论档案条：折叠 = 编号/标题/一句话/章数；展开 = 章节锚点列表、自 vX、修订次数、最近一次（链到复盘或 changelog）、关联 skill、进入模块 |
+| `VersionStrip` | `entries: ChangelogEntry[]` | 紧凑版本节点条；点按 trigger 着色描边，当前版本金色实心 + 光环 |
+| `EvolutionMatrix` | `modules entries` | 模块 × 版本矩阵，保留；方法论索引里放在 `<details>` 内 |
+
+### 首页
+
+| 组件 | Props | 用途 |
+|---|---|---|
+| `ArchiveNote` | `title sub? desc href icon:'book'\|'eye'\|'drawer'\|'swatch'\|'pen' size?:'lg'\|'md' rotate? area?` | 玻璃便签：icon / 标题 + 手写副题 / 两行说明 / 角落箭头 / 银夹子；`.lift` 抬起；`[data-tilt]` 由首页脚本在细指针上加 ≤2° 倾斜 |
+
+### 内容展示（沿用）
+
+`Tag`、`StatusBadge`、`ListRow`、`Timeline`、`EvolutionStrip`、`PatternStatusBar`、`MechanismFlow`、`ProductCards`、`PitfallCard`、`GrowthLog`、`Callout`、`EmptyState`（已改为虚线"空抽屉"）。`CardModule` 已不再被任何页面使用，可删。
+
+## A.4 材质与动效原语
+
+| 类 | 效果 | 使用限制 |
+|---|---|---|
+| `.paper-card` | 纸白 + 极淡边 + `--shadow-paper` + 10px 圆角 | 卡片默认材质 |
+| `.archive-row` | 纸白 + 左侧金色书脊 | 档案条 |
+| `.glass` / `.glass-hi` | blur 12px / 10px，无 blur 回退为纸白 | 一屏 ≤ 6 个；不叠在已有 backdrop-filter 的元素内部（不生效） |
+| `.section-num` | 等宽、金色、字距 .12em | 编号 / kicker |
+| `.hand` | Caveat，-3° | 一页 ≤ 2 处，装饰 |
+| `.photo-layer` | 绝对定位图片 + 纸色渐变遮罩 | 只做底层氛围 |
+| `.lift` | hover/focus 上移 6px + 旋 .25° + `--shadow-lift` | 无 `will-change` |
+| `.reveal` | 进入视口淡入 14px；**首屏元素自动标 `.reveal--instant` 直接显示** | 首屏内容不得依赖它 |
+| `.acc-panel` / `.is-open` | grid 行高 0fr→1fr，260ms | 配 `aria-expanded` |
+| `.rail` | 横向 scroll-snap，隐藏滚动条 | 移动端便签 / 档案夹 |
+
+`prefers-reduced-motion: reduce` 时：所有 transition/animation ≈ 0、`.lift` 不位移、`.reveal` 直接可见、view transition 关闭。
+
+## A.5 布局规则
+
+- 容器：`.container-prose` 760 / `.container-wide` 1180 / `.container-hero` 1320；≤767px 内边距 16px。
+- `.layout-sidebar`：`minmax(0,1fr) 220px`；**`> .sidebar` 整体 sticky top 88px**，超高时内部滚动；≤900px 单列、静态。
+- 首页 hero：`isolation: isolate`，照片层 z 0、内容层 z 2；便签网格 `'meth meth obs' / 'meth meth skill' / 'visual notes notes'`，≤767px 变 78vw 横滑。
+- 观察页：三张档案夹 `1.25fr 1fr 1fr`，按序下移 `--i × 1rem` 制造错位；≤900px 横滑。
+
+## A.6 工程规则
+
+1. **View Transitions 已启用**（`<ClientRouter />`）：组件 `<script>` 只在首次加载执行。所有绑定用 `astro:page-load` 重跑，或 document 级事件委托，并用 `dataset.bound` / `window.__xxx` 防重复。
+2. **首屏不依赖动画**：`bindReveal` 对视口内元素直接标 `is-in + reveal--instant`。
+3. **backdrop-filter 克制**：模糊 ≤12px，不加 saturate，不嵌套。
+4. **不写裸色值**：`src/` 内 0 处 hex；新组件继续用 token。
+5. **图片**：原图放 `src/assets/img/`，`pnpm images` 产出 `public/img/*.webp`；页面用 `<picture>` 分 800/1440。
+6. **验证**：`pnpm build` 后用 `.claude/launch.json` 的 `preview`（4322）看构建产物；dev 模式没有 Pagefind 索引。
+
+## A.7 与设计稿的有意偏差
+
+| 项 | 设计稿 | 实现 | 原因 |
+|---|---|---|---|
+| 纸色 | `#F6F2E9` | `#FAF7F1`，纹理 16% multiply | 纹理叠底后主体比 header/hero 暗一截，用户反馈偏黄 |
+| 玻璃 | blur 18px + saturate .85 | blur 12px | 5 张便签叠大图时合成开销过高，且截图/低端设备掉帧 |
+| `--fs-display` | `clamp(2.6rem,5.1vw,5.2rem)` | `clamp(2.2rem,3.6vw,3.6rem)` | 1280 宽下 H1 折 4 行、尾行孤字 |
+| Hero 入场 | section reveal | 首屏无动画 | 首绘不能等合成线程；LCP |
+| 便签 3D | 每张 `perspective()` | 父级 `perspective: 1000px` | 减少合成层 |
+| 观察页 | 层叠文件夹可切换前景 | 三张错位静态档案夹 | 内容量不足（公司拆解为空），见 PROGRESS.md |
+| 移动端菜单 | glass sheet | 不透明纸白 | header 已有 backdrop-filter，子元素再叠 blur 不生效 |
