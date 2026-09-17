@@ -48,9 +48,9 @@ export const featuredEntries = [
   },
   {
     kicker: '项目复盘',
-    title: '慎用反例与兜底',
-    summary: '两个企业 agent 项目的同一个教训：反例不是在收紧边界，是在挤掉中间地带。三条坑，对应模块 05。',
-    href: '/retros/2026-09-negative-examples/',
+    title: 'AI 项目实战心得',
+    summary: '两个企业 agent 项目的六条心得：反例与兜底、检索选型、边界知识、多模态、提速、等待态。八个坑，对应五个模块。',
+    href: '/retros/2026-09-enterprise-agent-insights/',
   },
 ] as const;
 
