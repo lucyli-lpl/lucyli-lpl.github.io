@@ -8,7 +8,7 @@ PROJECTS_DIR="$(cd "$SITE_DIR/.." && pwd)"
 rm -rf "$SITE_DIR/.content"
 mkdir "$SITE_DIR/.content"
 
-for r in ai-design-patterns ai-business-anatomy ai-pm-fieldbook; do
+for r in ai-design-patterns ai-business-anatomy ai-pm-fieldbook product-manager-skills; do
   if [ -d "$PROJECTS_DIR/$r" ]; then
     cp -r "$PROJECTS_DIR/$r" "$SITE_DIR/.content/$r"
     echo "Copied $r"

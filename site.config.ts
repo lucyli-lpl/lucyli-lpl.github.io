@@ -71,10 +71,15 @@ export const skillMeta: Record<string, { repo: string; module?: string; display:
   'auto-analysis':      { repo: 'ai-business-anatomy', display: '自动分析' },
   'pattern-tracker':    { repo: 'ai-design-patterns', display: 'pattern 追踪' },
   'visual-library':     { repo: 'ai-design-patterns', display: '视觉库' },
+  'clarify-requirements':      { repo: 'product-manager-skills', display: '需求澄清' },
+  'write-decision-docs':       { repo: 'product-manager-skills', display: '决策型文档' },
+  'build-project-briefs':      { repo: 'product-manager-skills', display: '项目汇报' },
+  'design-low-friction-flows': { repo: 'product-manager-skills', display: '低打扰交互' },
 };
 
 export const repos = [
   'ai-design-patterns',
   'ai-business-anatomy',
   'ai-pm-fieldbook',
+  'product-manager-skills',
 ] as const;

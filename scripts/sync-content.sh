@@ -3,7 +3,7 @@ set -e
 
 rm -rf .content && mkdir .content
 
-for r in ai-design-patterns ai-business-anatomy ai-pm-fieldbook; do
+for r in ai-design-patterns ai-business-anatomy ai-pm-fieldbook product-manager-skills; do
   git clone --depth 1 "https://github.com/lucyli-lpl/$r" ".content/$r"
 done
 

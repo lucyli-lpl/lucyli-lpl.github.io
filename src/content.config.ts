@@ -88,6 +88,7 @@ const skills = defineCollection({
     resolve(root, '.content/ai-design-patterns/skills'),
     resolve(root, '.content/ai-business-anatomy/skills'),
     resolve(root, '.content/ai-pm-fieldbook/skills'),
+    resolve(root, '.content/product-manager-skills/skills'),
   ]),
   schema: z.object({
     name: z.string(),
